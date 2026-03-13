@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tổng hợp Kiểu Dữ Liệu C++</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f7fafc;
+            border-bottom: 2px solid #e2e8f0;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            font-size: 1em;
+            font-weight: 600;
+            color: #4a5568;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            background: #edf2f7;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr:hover {
+            background: #f7fafc;
+        }
+
+        .type-name {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .size {
+            font-weight: bold;
+            color: #48bb78;
+        }
+
+        .note-box {
+            background: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .note-box h3 {
+            color: #c53030;
+            margin-bottom: 10px;
+        }
+
+        .info-box {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .info-box h3 {
+            color: #2c5282;
+            margin-bottom: 10px;
+        }
+
+        .code-example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+        .code-example code {
+            color: #68d391;
+        }
+
+        .section-title {
+            color: #2d3748;
+            margin: 30px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        li {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Tổng hợp Kiểu Dữ Liệu C++</h1>
+            <p class="subtitle">Hướng dẫn chi tiết về kích thước và chức năng các kiểu biến</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('basic')">Kiểu Cơ Bản</button>
+            <button class="tab" onclick="showTab('integer')">Số Nguyên</button>
+            <button class="tab" onclick="showTab('float')">Số Thực</button>
+            <button class="tab" onclick="showTab('char')">Ký Tự</button>
+            <button class="tab" onclick="showTab('pointer')">Con Trỏ & Tham Chiếu</button>
+            <button class="tab" onclick="showTab('compound')">Kiểu Phức Hợp</button>
+        </div>
+
+        <div class="content">
+            <!-- Tab Kiểu Cơ Bản -->
+            <div id="basic" class="tab-content active">
+                <h2 class="section-title">Tổng Quan Kiểu Dữ Liệu Cơ Bản</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Kiểu Dữ Liệu</th>
+                            <th>Kích Thước</th>
+                            <th>Phạm Vi Giá Trị</th>
+                            <th>Chức Năng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="type-name">bool</td>
+                            <td class="size">1 byte</td>
+                            <td>true hoặc false</td>
+                            <td>Lưu giá trị logic đúng/sai</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">char</td>
+                            <td class="size">1 byte</td>
+                            <td>-128 đến 127</td>
+                            <td>Lưu ký tự ASCII</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">unsigned char</td>
+                            <td class="size">1 byte</td>
+                            <td>0 đến 255</td>
+                            <td>Ký tự không dấu</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">short</td>
+                            <td class="size">2 bytes</td>
+                            <td>-32,768 đến 32,767</td>
+                            <td>Số nguyên ngắn</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">int</td>
+                            <td class="size">4 bytes</td>
+                            <td>-2,147,483,648 đến 2,147,483,647</td>
+                            <td>Số nguyên tiêu chuẩn</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">long</td>
+                            <td class="size">4/8 bytes</td>
+                            <td>Tùy hệ thống (32/64 bit)</td>
+                            <td>Số nguyên dài</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">long long</td>
+                            <td class="size">8 bytes</td>
+                            <td>-9,223,372,036,854,775,808 đến 9,223,372,036,854,775,807</td>
+                            <td>Số nguyên rất dài</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">float</td>
+                            <td class="size">4 bytes</td>
+                            <td>±3.4E-38 đến ±3.4E+38 (7 chữ số thập phân)</td>
+                            <td>Số thực độ chính xác đơn</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">double</td>
+                            <td class="size">8 bytes</td>
+                            <td>±1.7E-308 đến ±1.7E+308 (15 chữ số thập phân)</td>
+                            <td>Số thực độ chính xác kép</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">long double</td>
+                            <td class="size">8/16 bytes</td>
+                            <td>Tùy hệ thống (19+ chữ số thập phân)</td>
+                            <td>Số thực độ chính xác mở rộng</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="info-box">
+                    <h3>💡 Lưu Ý</h3>
+                    <ul>
+                        <li>Kích thước có thể khác nhau tùy compiler và hệ thống (32-bit vs 64-bit)</li>
+                        <li>Dùng <code>sizeof()</code> để kiểm tra kích thước chính xác</li>
+                        <li>Chọn kiểu dữ liệu phù hợp để tối ưu bộ nhớ</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tab Số Nguyên -->
+            <div id="integer" class="tab-content">
+                <h2 class="section-title">Kiểu Số Nguyên Chi Tiết</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Kiểu</th>
+                            <th>Signed</th>
+                            <th>Unsigned</th>
+                            <th>Khi Nào Dùng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="type-name">char</td>
+                            <td>-128 đến 127</td>
+                            <td>0 đến 255</td>
+                            <td>Ký tự, số nhỏ, byte</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">short</td>
+                            <td>-32,768 đến 32,767</td>
+                            <td>0 đến 65,535</td>
+                            <td>Tiết kiệm bộ nhớ, giá trị nhỏ</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">int</td>
+                            <td>~-2.1 tỷ đến ~2.1 tỷ</td>
+                            <td>0 đến ~4.2 tỷ</td>
+                            <td>Mặc định cho số nguyên</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">long</td>
+                            <td>Giống int (32-bit) hoặc lớn hơn</td>
+                            <td>0 đến ~4.2 tỷ+</td>
+                            <td>Số lớn, tùy hệ thống</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">long long</td>
+                            <td>~-9.2 quintillion</td>
+                            <td>0 đến ~18.4 quintillion</td>
+                            <td>Số rất lớn, tính toán khoa học</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-example">
+                    // Ví dụ khai báo
+                    <code>
+char age = 25;
+unsigned char byte_data = 255;
+short year = 2025;
+int population = 1000000;
+unsigned int positive_only = 4000000000;
+long long big_number = 9223372036854775807LL;
+</code>
+                </div>
+
+                <div class="note-box">
+                    <h3>⚠️ Lưu Ý Overflow</h3>
+                    <p>Khi giá trị vượt quá phạm vi, sẽ xảy ra tràn số (overflow):</p>
+                    <ul>
+                        <li><strong>Signed overflow</strong>: Kết quả không xác định (undefined behavior)</li>
+                        <li><strong>Unsigned overflow</strong>: Quay vòng (wrap around): 255 + 1 = 0</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tab Số Thực -->
+            <div id="float" class="tab-content">
+                <h2 class="section-title">Kiểu Số Thực (Floating Point)</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Kiểu</th>
+                            <th>Kích Thước</th>
+                            <th>Độ Chính Xác</th>
+                            <th>Phạm Vi</th>
+                            <th>Khi Nào Dùng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="type-name">float</td>
+                            <td class="size">4 bytes</td>
+                            <td>~7 chữ số</td>
+                            <td>±3.4E±38</td>
+                            <td>Đồ họa, game, tiết kiệm bộ nhớ</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">double</td>
+                            <td class="size">8 bytes</td>
+                            <td>~15 chữ số</td>
+                            <td>±1.7E±308</td>
+                            <td>Mặc định, tính toán khoa học</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">long double</td>
+                            <td class="size">8-16 bytes</td>
+                            <td>~19+ chữ số</td>
+                            <td>Tùy compiler</td>
+                            <td>Tính toán siêu chính xác</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-example">
+                    // Ví dụ sử dụng
+                    <code>
+float pi_f = 3.14159f;           // Thêm 'f' cho float
+double pi_d = 3.141592653589793; // Mặc định là double
+long double pi_ld = 3.141592653589793238L; // Thêm 'L'
+
+// Biểu diễn khoa học
+float small = 1.23e-10f;  // 1.23 × 10^-10
+double large = 6.022e23;  // 6.022 × 10^23 (số Avogadro)
+</code>
+                </div>
+
+                <div class="note-box">
+                    <h3>⚠️ Vấn Đề Độ Chính Xác</h3>
+                    <ul>
+                        <li>Số thực không lưu chính xác 100%: 0.1 + 0.2 ≠ 0.3</li>
+                        <li>Không nên so sánh trực tiếp: <code>if (a == b)</code></li>
+                        <li>Dùng epsilon: <code>if (abs(a - b) < 1e-9)</code></li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h3>💡 Khi Nào Dùng float vs double?</h3>
+                    <ul>
+                        <li><strong>float</strong>: Mảng lớn (hình ảnh, âm thanh), game, GPU</li>
+                        <li><strong>double</strong>: Tính toán tài chính, khoa học, mặc định</li>
+                        <li><strong>long double</strong>: Thiên văn học, mật mã học</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tab Ký Tự -->
+            <div id="char" class="tab-content">
+                <h2 class="section-title">Kiểu Ký Tự và String</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Kiểu</th>
+                            <th>Kích Thước</th>
+                            <th>Mô Tả</th>
+                            <th>Ví Dụ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="type-name">char</td>
+                            <td class="size">1 byte</td>
+                            <td>Ký tự ASCII đơn</td>
+                            <td><code>char ch = 'A';</code></td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">wchar_t</td>
+                            <td class="size">2-4 bytes</td>
+                            <td>Ký tự Unicode rộng</td>
+                            <td><code>wchar_t wch = L'你';</code></td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">char16_t</td>
+                            <td class="size">2 bytes</td>
+                            <td>UTF-16</td>
+                            <td><code>char16_t c16 = u'€';</code></td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">char32_t</td>
+                            <td class="size">4 bytes</td>
+                            <td>UTF-32</td>
+                            <td><code>char32_t c32 = U'😀';</code></td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">char[]</td>
+                            <td class="size">n bytes</td>
+                            <td>Mảng ký tự C-style</td>
+                            <td><code>char str[50];</code></td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">string</td>
+                            <td class="size">Động</td>
+                            <td>C++ string class</td>
+                            <td><code>string s = "Hello";</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-example">
+                    // Khai báo và sử dụng
+                    <code>
+#include &lt;string&gt;
+
+// Ký tự đơn
+char letter = 'A';
+char newline = '\n';  // Escape sequence
+char tab = '\t';
+
+// Mảng ký tự (C-style)
+char name[50] = "Nguyen Van A";
+char empty[100] = {0};  // Khởi tạo rỗng
+
+// C++ string (khuyên dùng)
+string fullname = "Nguyen Van A";
+string greeting = "Xin chào " + fullname;
+</code>
+                </div>
+
+                <div class="info-box">
+                    <h3>💡 Escape Sequences Thường Dùng</h3>
+                    <ul>
+                        <li><code>\n</code> - Xuống dòng (newline)</li>
+                        <li><code>\t</code> - Tab ngang</li>
+                        <li><code>\\</code> - Dấu backslash</li>
+                        <li><code>\'</code> - Dấu nháy đơn</li>
+                        <li><code>\"</code> - Dấu nháy kép</li>
+                        <li><code>\0</code> - Null character (kết thúc string)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tab Con Trỏ & Tham Chiếu -->
+            <div id="pointer" class="tab-content">
+                <h2 class="section-title">Con Trỏ (Pointer) và Tham Chiếu (Reference)</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Loại</th>
+                            <th>Cú Pháp</th>
+                            <th>Kích Thước</th>
+                            <th>Đặc Điểm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="type-name">Pointer</td>
+                            <td><code>int* ptr;</code></td>
+                            <td class="size">4 bytes (32-bit)<br>8 bytes (64-bit)</td>
+                            <td>Lưu địa chỉ bộ nhớ, có thể NULL, thay đổi được</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">Reference</td>
+                            <td><code>int& ref;</code></td>
+                            <td class="size">0 bytes*</td>
+                            <td>Alias của biến, phải khởi tạo, không thay đổi</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">Pointer to Pointer</td>
+                            <td><code>int** pptr;</code></td>
+                            <td class="size">4/8 bytes</td>
+                            <td>Con trỏ trỏ đến con trỏ</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">Array Pointer</td>
+                            <td><code>int* arr;</code></td>
+                            <td class="size">4/8 bytes</td>
+                            <td>Trỏ đến phần tử đầu mảng</td>
+                        </tr>
+                        <tr>
+                            <td class="type-name">Function Pointer</td>
+                            <td><code>int (*fptr)(int);</code></td>
+                            <td class="size">4/8 bytes</td>
+                            <td>Trỏ đến hàm</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-example">
+                    // Con trỏ (Pointer)
+                    <code>
+int x = 10;
+int* ptr = &x;        // ptr lưu địa chỉ của x
+cout << *ptr;         // 10 (dereference để lấy giá trị)
+*ptr = 20;            // Thay đổi x thành 20
+ptr = nullptr;        // Gán NULL (C++11)
+
+// Tham chiếu (Reference)
+int y = 30;
+int& ref = y;         // ref là alias của y
+ref = 40;             // Thay đổi y thành 40
+// int& ref2;         // LỖI: phải khởi tạo ngay
+
+// Pass by reference trong hàm
+void swap(int& a, int& b) {
+    int temp = a;
+    a = b;
+    b = temp;
+}
+</code>
+                </div>
+
+                <div class="note-box">
+                    <h3>⚠️ Lỗi Thường Gặp</h3>
+                    <ul>
+                        <li><strong>Dangling pointer</strong>: Trỏ đến vùng nhớ đã bị giải phóng</li>
+                        <li><strong>Memory leak</strong>: Quên <code>delete</code> sau <code>new</code></li>
+                        <li><strong>Null pointer dereference</strong>: Truy cập <code>*ptr</code> khi ptr = NULL</li>
+                        <li><strong>Wild pointer</strong>: Pointer chưa khởi tạo</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h3>💡 Khi Nào Dùng Pointer vs Reference?</h3>
+                    <ul>
+                        <li><strong>Reference</strong>: Tham số hàm, không cần kiểm tra NULL, đơn giản</li>
+                        <li><strong>Pointer</strong>: Cần NULL, cấp phát động, thay đổi địa chỉ</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tab Kiểu Phức Hợp -->
+            <div id="compound" class="tab-content">
+                <h2 class="section-title">Kiểu Dữ Liệu Phức Hợp</h2>
+
+                <h3>1. Array (Mảng)</h3>
+                <div class="code-example">
+                    <code>
+// Mảng tĩnh
+int arr[5] = {1, 2, 3, 4, 5};           // 5 * 4 = 20 bytes
+char str[50];                           // 50 bytes
+double matrix[3][4];                    // 3 * 4 * 8 = 96 bytes
+
+// Mảng động (C++)
+int* dynamic_arr = new int[n];         // n * 4 bytes
+delete[] dynamic_arr;                   // Phải giải phóng!
+</code>
+                </div>
+
+                <h3>2. Struct (Cấu trúc)</h3>
+                <div class="code-example">
+                    <code>
+struct SinhVien {
+    char hoTen[50];    // 50 bytes
+    int mssv;          // 4 bytes
+    float diemTB;      // 4 bytes
+    // Padding để căn chỉnh: thường 2 bytes
+};  // Tổng: ~60 bytes (có thể khác do padding)
+
+SinhVien sv1;
+sizeof(SinhVien);  // Kiểm tra kích thước thực tế
+</code>
+                </div>
+
+                <h3>3. Union</h3>
+                <div class="code-example">
+                    <code>
+union Data {
+    int i;         // 4 bytes
+    float f;       // 4 bytes
+    char str[20];  // 20 bytes
+};  // Kích thước = phần tử lớn nhất = 20 bytes
+
+Data d;
+d.i = 10;      // Dùng như int
+d.f = 3.14;    // Ghi đè lên i (chia sẻ vùng nhớ)
+</code>
+                </div>
+
+                <h3>4. Enum (Liệt kê)</h3>
+                <div class="code-example">
+                    <code>
+// C-style enum
+enum Color { RED, GREEN, BLUE };  // 4 bytes (như int)
+Color c = RED;
+
+// C++11 enum class (khuyên dùng)
+enum class Status : char { OK, ERROR, PENDING };  // 1 byte
+Status s = Status::OK;
+</code>
+                </div>
+
+                <h3>5. Class</h3>
+                <div class="code-example">
+                    <code>
+class Student {
+private:
+    string name;      // ~32 bytes (tùy implementation)
+    int age;          // 4 bytes
+    float gpa;        // 4 bytes
+public:
+    void display();   // Hàm không chiếm bộ nhớ trong object
+};  // Kích thước tùy thuộc vào member variables + padding
+</code>
+                </div>
+
+                <div class="info-box">
+                    <h3>💡 Data Alignment & Padding</h3>
+                    <p>Compiler tự động thêm padding để tối ưu hiệu suất:</p>
+                    <ul>
+                        <li>Mỗi kiểu dữ liệu cần căn chỉnh theo bội số kích thước của nó</li>
+                        <li><code>double</code> (8 bytes) → địa chỉ chia hết cho 8</li>
+                        <li><code>int</code> (4 bytes) → địa chỉ chia hết cho 4</li>
+                        <li>Sắp xếp member từ lớn đến nhỏ để giảm padding</li>
+                    </ul>
+                </div>
+
+                <div class="note-box">
+                    <h3>⚠️ Tối Ưu Struct</h3>
+                    <div class="code-example">
+                        <code>
+// ❌ Không tối ưu (72 bytes)
+struct Bad {
+    char c;      // 1 byte
+    double d;    // 8 bytes (cần 7 bytes padding trước)
+    int i;       // 4 bytes
+};
+
+// ✅ Tối ưu (16 bytes)
+struct Good {
+    double d;    // 8 bytes
+    int i;       // 4 bytes
+    char c;      // 1 byte (3 bytes padding sau)
+};
+</code>
+                    </div>
+                </div>
+
+                <h3>6. Vector & Container (C++ STL)</h3>
+                <div class="code-example">
+                    <code>
+#include &lt;vector&gt;
+#include &lt;map&gt;
+#include &lt;set&gt;
+
+vector&lt;int&gt; vec;           // ~24 bytes overhead + data
+vec.push_back(10);
+vec.size();                 // Số phần tử
+vec.capacity();             // Dung lượng đã cấp phát
+
+map&lt;string, int&gt; m;        // Overhead lớn hơn
+set&lt;int&gt; s;                // Dữ liệu được sắp xếp
+</code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Ẩn tất cả tab content
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Bỏ active khỏi tất cả tab buttons
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Hiện tab được chọn
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+
+</html

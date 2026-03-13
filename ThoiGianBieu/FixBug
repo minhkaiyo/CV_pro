@@ -1,0 +1,39 @@
+; 1. Thiếu API Key của Firebase
+; 2. Logic Đăng nhập/Đăng xuất bị Lỗi
+; API Key bị lộ trong tệp JavaScript chính
+
+
+; ⚙️ Vấn đề & Tối ưu Code
+; 1. Phiên bản Firebase SDK không đồng nhất
+; 2. Lỗi gọi hàm React trong auth.js
+
+
+
+- Đăng nhập chỉnh sửa thông tin có lưu lại bảng danh sách môn, thời khóa biểu, phân bổ thời gian nhưng không lưu lại phần còn lại(chiến lược học tập, check list hàng tuần, lưu ý quan trọng). Ngoài ra thì phần động lực mỗi ngày chưa được cập nhật liên tục(để cho phần này cập nhật mỗi 2,3 giờ 1 lần).///
+
+- Ở phần checklist sẽ có 2 phần checklist hàng ngày và checklist hàng tuần với 2 ô ẩn, sau khi bấm vào thì sẽ hiện từng phần. và thêm thuật toán sao cho tự động reset lại nhiệm vụ mỗi ngày, mỗi tuần. ///
+
+- Hiện tại chỉ cần bấm chỉnh sửa ở bất kỳ chỗ nào xong bấm dấu cộng ở phần thời khóa biểu cũ thì bảng thời khóa biểu mới lại không hiện ra. fix lại sao cho hết lỗi này và khi đóng bảng thời khóa biểu lại vẫn có thể điều chỉnh được tất cả các phần trong web( từng có 1 lỗi đóng tkb mới lại thì không thể chỉnh được phần bên dưới). ///
+
+- Chỉnh lại màu nền buổi tối cho dễ nhìn hơn, ví dụ như màu nền vào ban đêm ở phần lưu ý quan trọng, đăng nhập lại có nền trắng và phông chữ trắng nhìn rất khó nhìn. Hãy làm màu nền và màu chữ tách biệt dễ nhìn và cuốn hút hơn ///
+
+- Bổ sung cho phép tùy chỉnh mục tiêu theo từng bậc: A+, A, B+, B, C+, C ///
+
+
+- Thêm phần thông tin liên lạc, phản hồi về các vấn đề liên quan đến web, khác ở phía dưới cùng
+
+
+- Chỉnh lại toàn bộ code sao cho web như trở thàh 1 bản trống mẫu dành cho người dùng mới( có hướng dẫn các mục nhưng sau khi người dùng nhập vào cái gì đó thì hướng dẫn đó tự động biến mất thay vì phải chủ động xóa) ///
+
+
+- Tích hợp AI động viên, tự tính toán thời gian biểu, xem tử vi bói toán ngày hôm nay vào web
+
+
+
+// Đánh vào tâm lý mọi người sẽ hiếm khi thực hiện kế hoạch theo đúng thời gian đặt ra nên mình đã tạo 1 thời gian biểu ở mức tổng quát cho đến chi tiết
+// Ở mức tổng quan chúng ta có thể nắm được trong 1 buổi sẽ có những hoạt động gì diễn ra
+// Ở mức chi tiết mọi người có thể tinh chỉnh chi tiết từng khoảng thời gian mong muốn
+// Với các tính năng đặt ra giới hạn thời gian, thời gian học mỗi tuần, danh sách môn học, mục tiêu điểm mong muốn cùng với các tính năng checklist ghi chú các mục sẽ giúp mọi người dễ dàng nắm bắt kế hoạch của bản thân hơn
+// Web có tính năng tự động ngủ đông nên sẽ tốn ít tài nguyên máy hơn sau mỗi 1 vài giây không dùng đến
+// Mỗi người có thể nhanh chóng tạo tài khoản sử dụng cho riêng mình để lưu thời gian biểu mong muốn và xem lại
+// Vì web mới được tạo chưa lâu và chưa phát hiện hết lỗi trong quá trình sử dụng. nếu có lỗi hay vấn đề gì xin hãy liên hệ qua...
