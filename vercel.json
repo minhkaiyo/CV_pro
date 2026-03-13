@@ -1,0 +1,13 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/cv-profile/index.html"
+    },
+    {
+      "source": "/(css|js|assets)/(.*)",
+      "destination": "/cv-profile/$1/$2"
+    }
+  ]
+}
