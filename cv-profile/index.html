@@ -151,17 +151,34 @@
           </p>
 
           <!-- MỤC ĐÁNH GIÁ QUÁ TRÌNH HỌC TẬP (RIÊNG TƯ) -->
-          <!-- HƯỚNG DẪN: Để hiển thị mục này, hãy đổi 'display: none;' thành 'display: block;' -->
-          <div class="private-reflection" style="display: none; margin-top: 20px; padding: 15px; border-left: 4px solid var(--accent-purple); background: rgba(139, 92, 246, 0.05); border-radius: 0 8px 8px 0;">
-            <h4 style="color: var(--accent-purple); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-              <i data-lucide="lock" style="width:16px;height:16px"></i> Góc Nhìn Cá Nhân
+          <style>
+            .reflection-box { position: relative; margin-top: 25px; padding: 20px; border-left: 4px solid var(--accent-purple); background: rgba(139, 92, 246, 0.05); border-radius: 0 8px 8px 0; overflow: hidden; }
+            .reflection-content { font-size: 0.95rem; line-height: 1.7; transition: all 0.5s ease; }
+            .reflection-box.is-locked .reflection-content { filter: blur(6px); user-select: none; opacity: 0.4; }
+            .reflection-overlay { visibility: hidden; opacity: 0; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; background: rgba(15, 23, 42, 0.5); z-index: 10; font-weight: 500; transition: all 0.3s ease; backdrop-filter: blur(2px); }
+            .reflection-box.is-locked .reflection-overlay { visibility: visible; opacity: 1; }
+          </style>
+
+          <!-- HƯỚNG DẪN: Để hiển thị đoạn chat chi tiết, hãy xóa class "is-locked" ở dòng bên dưới -->
+          <div class="reflection-box is-locked">
+            <h4 style="color: var(--accent-purple); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="lock" style="width:18px;height:18px"></i> Đánh giá quá trình học Đại học
             </h4>
-            <p style="font-size: 0.9rem; line-height: 1.6; margin-bottom: 8px;">
-              Hành trình tại Bách Khoa là một hành trình đầy áp lực nhưng cũng là môi trường rèn giũa bản lĩnh kỹ sư tốt nhất. Trong 3 năm qua, tôi đã trải qua rất nhiều cảm xúc: từ những đêm thức trắng chạy deadline mạch điện, đến việc đứng giữa ngã rẽ lựa chọn hướng đi đi làm ngay hay tiếp tục con đường học thuật nghiên cứu (Thạc sĩ/Tiến sĩ).
-            </p>
-            <p style="font-size: 0.9rem; line-height: 1.6;">
-              Mặc dù đối mặt với những rào cản nhất định, nhưng việc giữ vững kết quả học tập để hướng tới các cơ hội học bổng luôn là định hướng của tôi. Bất kể tương lai lựa chọn làm kỹ sư công nghiệp hay học giả, khối lượng dự án hiện tại đã giúp tôi xây dựng được một nền tảng tư duy linh hoạt và kỹ năng giải quyết vấn đề hiệu quả.
-            </p>
+            
+            <div class="reflection-overlay">
+              <i data-lucide="shield-alert" style="width:36px;height:36px;color:var(--accent-purple);margin-bottom:12px"></i>
+              <span style="font-size:1.1rem;color:white;letter-spacing:0.5px">Nội dung đã được mã hoá (Riêng tư)</span>
+              <span style="font-size:0.8rem;color:var(--text-muted);margin-top:6px">Cần cấp quyền truy cập mã nguồn để xem chi tiết.</span>
+            </div>
+            
+            <div class="reflection-content">
+              <p style="margin-bottom: 12px;">
+                Hành trình tại Bách Khoa là một hành trình đầy áp lực nhưng cũng là môi trường rèn giũa góc nhìn và bản lĩnh kỹ sư tuyệt vời nhất. Trong 3 năm qua, tôi đã trải qua rất nhiều cảm xúc: từ những đêm thức trắng chạy deadline phần cứng, đến việc trăn trở đứng giữa ngã rẽ sự nghiệp — lựa chọn đi làm ngay kiếm thêm thu nhập hay tiếp tục theo đuổi học thuật nghiên cứu Thạc sĩ, Tiến sĩ.
+              </p>
+              <p>
+                Rào cản tài chính là một thách thức không thể chối bỏ, song việc giữ vững định hướng và tìm kiếm những cơ hội học bổng vẫn là kim chỉ nam của tôi. Bất kể tương lai tôi lựa chọn trở thành kỹ sư công nghiệp thực tế hay một học giả nghiên cứu hệ thống nhúng, những thất bại cùng khối lượng dự án nền tảng hiện tại đã giúp tôi định hình được tư duy linh hoạt và kỹ năng giải quyết vấn đề.
+              </p>
+            </div>
           </div>
           <!-- KẾT THÚC MỤC RIÊNG TƯ -->
 
