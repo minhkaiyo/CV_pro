@@ -157,6 +157,8 @@
             .reflection-box.is-locked .reflection-content { filter: blur(6px); user-select: none; opacity: 0.4; }
             .reflection-overlay { visibility: hidden; opacity: 0; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; background: rgba(15, 23, 42, 0.5); z-index: 10; font-weight: 500; transition: all 0.3s ease; backdrop-filter: blur(2px); }
             .reflection-box.is-locked .reflection-overlay { visibility: visible; opacity: 1; }
+            .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px; }
+            @media (max-width: 768px) { .charts-grid { grid-template-columns: 1fr; } }
           </style>
 
           <!-- HƯỚNG DẪN: Để hiển thị đoạn chat chi tiết, hãy xóa class "is-locked" ở dòng bên dưới -->
@@ -172,12 +174,17 @@
             </div>
             
             <div class="reflection-content">
-              <p style="margin-bottom: 12px;">
-                Hành trình tại Bách Khoa là một hành trình đầy áp lực nhưng cũng là môi trường rèn giũa góc nhìn và bản lĩnh kỹ sư tuyệt vời nhất. Trong 3 năm qua, tôi đã trải qua rất nhiều cảm xúc: từ những đêm thức trắng chạy deadline phần cứng, đến việc trăn trở đứng giữa ngã rẽ sự nghiệp — lựa chọn đi làm ngay kiếm thêm thu nhập hay tiếp tục theo đuổi học thuật nghiên cứu Thạc sĩ, Tiến sĩ.
+              <p style="margin-bottom: 10px; color: var(--text-muted); font-style: italic;">
+                Kết quả thống kê qua các học kỳ (Dữ liệu đã mã hoá):
               </p>
-              <p>
-                Rào cản tài chính là một thách thức không thể chối bỏ, song việc giữ vững định hướng và tìm kiếm những cơ hội học bổng vẫn là kim chỉ nam của tôi. Bất kể tương lai tôi lựa chọn trở thành kỹ sư công nghiệp thực tế hay một học giả nghiên cứu hệ thống nhúng, những thất bại cùng khối lượng dự án nền tảng hiện tại đã giúp tôi định hình được tư duy linh hoạt và kỹ năng giải quyết vấn đề.
-              </p>
+              <div class="charts-grid">
+                <div style="background: rgba(15, 23, 42, 0.4); padding: 15px; border-radius: 8px; border: 1px solid rgba(139, 92, 246, 0.2);">
+                    <canvas id="gpaChart"></canvas>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.4); padding: 15px; border-radius: 8px; border: 1px solid rgba(139, 92, 246, 0.2);">
+                    <canvas id="drlChart"></canvas>
+                </div>
+              </div>
             </div>
           </div>
           <!-- KẾT THÚC MỤC RIÊNG TƯ -->
@@ -634,6 +641,7 @@
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

@@ -32,6 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ========== MOBILE NAV ==========
   initMobileNav();
+
+  // ========== ACADEMIC CHARTS ==========
+  initAcademicCharts();
 });
 
 /* ---------- Particle Background ---------- */
@@ -327,4 +330,86 @@ function initMobileNav() {
       toggle.classList.toggle('active');
     });
   }
+}
+
+/* ---------- Academic Charts ---------- */
+function initAcademicCharts() {
+  const gpaCanvas = document.getElementById('gpaChart');
+  const drlCanvas = document.getElementById('drlChart');
+  
+  if (!gpaCanvas || !drlCanvas) return;
+
+  const labels = ['2023.1', '2023.2', '2024.1', '2024.2', '2025.1'];
+  
+  // GPA Chart
+  new Chart(gpaCanvas, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'GPA',
+        data: [3.5, 3.14, 3.03, 3.88, 3.71],
+        borderColor: '#06b6d4',
+        backgroundColor: 'rgba(6, 182, 212, 0.2)',
+        borderWidth: 2,
+        pointBackgroundColor: '#06b6d4',
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: 'Biểu đồ GPA', color: '#e2e8f0', font: { size: 14 } }
+      },
+      scales: {
+        y: {
+          min: 2.0,
+          max: 4.0,
+          ticks: { color: '#94a3b8' },
+          grid: { color: 'rgba(148, 163, 184, 0.1)' }
+        },
+        x: {
+          ticks: { color: '#94a3b8' },
+          grid: { color: 'rgba(148, 163, 184, 0.1)' }
+        }
+      }
+    }
+  });
+
+  // Điểm rèn luyện Chart
+  new Chart(drlCanvas, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Điểm Rèn Luyện',
+        data: [96, 88, 94, 94, 99],
+        backgroundColor: 'rgba(139, 92, 246, 0.6)',
+        borderColor: '#8b5cf6',
+        borderWidth: 1,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: 'Biểu đồ Điểm Rèn Luyện', color: '#e2e8f0', font: { size: 14 } }
+      },
+      scales: {
+        y: {
+          min: 60,
+          max: 100,
+          ticks: { color: '#94a3b8' },
+          grid: { color: 'rgba(148, 163, 184, 0.1)' }
+        },
+        x: {
+          ticks: { color: '#94a3b8' },
+          grid: { display: false }
+        }
+      }
+    }
+  });
 }
