@@ -35,6 +35,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ========== ACADEMIC CHARTS ==========
   initAcademicCharts();
+
+  // ========== 🌟 PREMIUM EFFECTS ==========
+  initCustomCursor();
+  initCardTilt();
+  initMagneticButtons();
+  initSpotlightFollow();
+  initScrollProgress();
 });
 
 /* ---------- Particle Background ---------- */
@@ -413,3 +420,116 @@ function initAcademicCharts() {
     }
   });
 }
+
+/* ==============================================
+   🌟 PREMIUM INTERACTIVE EFFECTS
+   ============================================== */
+
+/* ---------- Custom Animated Cursor ---------- */
+function initCustomCursor() {
+  if ('ontouchstart' in window) return;
+
+  const dot = document.createElement('div');
+  dot.className = 'cursor-dot';
+  const ring = document.createElement('div');
+  ring.className = 'cursor-ring';
+  document.body.appendChild(dot);
+  document.body.appendChild(ring);
+
+  let mouseX = 0, mouseY = 0;
+  let dotX = 0, dotY = 0;
+  let ringX = 0, ringY = 0;
+
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  function animateCursor() {
+    dotX += (mouseX - dotX) * 0.25;
+    dotY += (mouseY - dotY) * 0.25;
+    dot.style.left = dotX + 'px';
+    dot.style.top = dotY + 'px';
+
+    ringX += (mouseX - ringX) * 0.12;
+    ringY += (mouseY - ringY) * 0.12;
+    ring.style.left = ringX + 'px';
+    ring.style.top = ringY + 'px';
+
+    requestAnimationFrame(animateCursor);
+  }
+  animateCursor();
+
+  const hoverTargets = document.querySelectorAll('a, button, .project-card, .skill-category, .highlight-card, .btn-primary, .btn-secondary, .contact-method, input, textarea');
+  hoverTargets.forEach(el => {
+    el.addEventListener('mouseenter', () => { dot.classList.add('cursor-hover'); ring.classList.add('cursor-hover'); });
+    el.addEventListener('mouseleave', () => { dot.classList.remove('cursor-hover'); ring.classList.remove('cursor-hover'); });
+  });
+
+  document.addEventListener('mousedown', () => { dot.classList.add('cursor-click'); ring.classList.add('cursor-click'); });
+  document.addEventListener('mouseup', () => { dot.classList.remove('cursor-click'); ring.classList.remove('cursor-click'); });
+
+  document.body.style.cursor = 'none';
+  document.querySelectorAll('a, button').forEach(el => { el.style.cursor = 'none'; });
+}
+
+/* ---------- 3D Card Tilt Effect ---------- */
+function initCardTilt() {
+  const cards = document.querySelectorAll('.project-card');
+  cards.forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -6;
+      const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 6;
+      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-8px) scale(1.02)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0) scale(1)';
+      card.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    });
+    card.addEventListener('mouseenter', () => { card.style.transition = 'transform 0.1s ease'; });
+  });
+}
+
+/* ---------- Magnetic Button Effect ---------- */
+function initMagneticButtons() {
+  const buttons = document.querySelectorAll('.btn-primary, .btn-secondary, .nav-cta');
+  buttons.forEach(btn => {
+    btn.addEventListener('mousemove', (e) => {
+      const rect = btn.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = 'translate(0, 0)';
+      btn.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    });
+    btn.addEventListener('mouseenter', () => { btn.style.transition = 'transform 0.1s ease'; });
+  });
+}
+
+/* ---------- Spotlight Follow on Sections ---------- */
+function initSpotlightFollow() {
+  document.querySelectorAll('.section').forEach(section => {
+    section.addEventListener('mousemove', (e) => {
+      const rect = section.getBoundingClientRect();
+      section.style.setProperty('--mouse-x', (e.clientX - rect.left) + 'px');
+      section.style.setProperty('--mouse-y', (e.clientY - rect.top) + 'px');
+    });
+  });
+}
+
+/* ---------- Scroll Progress Indicator ---------- */
+function initScrollProgress() {
+  const bar = document.createElement('div');
+  bar.style.cssText = 'position:fixed;top:0;left:0;height:3px;width:0%;background:linear-gradient(90deg,#06b6d4,#3b82f6,#8b5cf6);z-index:10001;transition:width 0.05s ease;box-shadow:0 0 10px rgba(6,182,212,0.5);';
+  document.body.appendChild(bar);
+  window.addEventListener('scroll', () => {
+    const pct = (document.documentElement.scrollTop / (document.documentElement.scrollHeight - document.documentElement.clientHeight)) * 100;
+    bar.style.width = pct + '%';
+  });
+}
+
