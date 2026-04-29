@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Nền tảng học tập trực tuyến - Tổng hợp kiến thức các môn học">
+    <title>Nền Tảng Học Tập</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="ai-chat.css">
+</head>
+<body>
+
+    <!-- ===== LOADING SCREEN ===== -->
+    <div id="loading-screen">
+        <div class="loader">
+            <div class="loader-ring"></div>
+            <div class="loader-ring"></div>
+            <div class="loader-ring"></div>
+            <i class="fas fa-book-open loader-icon"></i>
+        </div>
+        <p class="loader-text">Đang tải dữ liệu...</p>
+    </div>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>HọcTập</span>
+            </div>
+            <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle sidebar">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-page="home">
+                <i class="fas fa-home"></i>
+                <span>Trang chủ</span>
+            </a>
+            <a href="#" class="nav-item" data-page="subjects">
+                <i class="fas fa-book"></i>
+                <span>Môn học</span>
+            </a>
+            <a href="#" class="nav-item" data-page="notes">
+                <i class="fas fa-sticky-note"></i>
+                <span>Ghi chú</span>
+            </a>
+            <a href="#" class="nav-item" data-page="progress">
+                <i class="fas fa-chart-line"></i>
+                <span>Tiến độ</span>
+            </a>
+            <a href="#" class="nav-item" data-page="exams">
+                <i class="fas fa-file-signature"></i>
+                <span>Ôn thi</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="theme-switcher">
+                <i class="fas fa-moon"></i>
+                <span>Dark Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main id="main-content" class="main-content">
+
+        <!-- Top bar -->
+        <header class="topbar">
+            <button id="mobile-menu-btn" class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-input" placeholder="Tìm kiếm môn học, bài viết...">
+            </div>
+            <div class="topbar-actions">
+                <div id="auth-lock-badge" class="auth-badge auth-locked" onclick="AUTH.isAuth() ? AUTH.logout() : showAuthModal()" title="Nhấn để đăng nhập/đăng xuất">
+                    <i class="fas fa-lock"></i> <span>Đã khóa</span>
+                </div>
+                <span class="greeting" id="greeting-text">Chào buổi sáng!</span>
+            </div>
+        </header>
+
+        <!-- ===== HOME PAGE ===== -->
+        <section id="page-home" class="page active">
+            <div class="page-header">
+                <h1>Chào mừng trở lại! 👋</h1>
+                <p class="subtitle">Tiếp tục hành trình học tập của bạn</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card stat-blue">
+                    <div class="stat-icon"><i class="fas fa-book"></i></div>
+                    <div class="stat-info">
+                        <h3 id="total-subjects">0</h3>
+                        <p>Môn học</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-green">
+                    <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="stat-info">
+                        <h3 id="total-topics">0</h3>
+                        <p>Bài viết</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-purple">
+                    <div class="stat-icon"><i class="fas fa-sticky-note"></i></div>
+                    <div class="stat-info">
+                        <h3 id="total-notes">0</h3>
+                        <p>Ghi chú</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-orange">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    <div class="stat-info">
+                        <h3 id="last-updated">--</h3>
+                        <p>Cập nhật</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent subjects -->
+            <div class="section-header">
+                <h2>Môn học của bạn</h2>
+                <button class="btn btn-primary" id="btn-add-subject-home">
+                    <i class="fas fa-plus"></i> Thêm môn học
+                </button>
+            </div>
+            <div id="home-subjects-grid" class="subjects-grid">
+                <!-- Subject cards rendered here -->
+            </div>
+        </section>
+
+        <!-- ===== SUBJECTS PAGE ===== -->
+        <section id="page-subjects" class="page">
+            <div class="page-header">
+                <h1>📖 Danh sách Môn học</h1>
+                <p class="subtitle">Quản lý và truy cập tất cả các môn học</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-primary" id="btn-add-subject">
+                    <i class="fas fa-plus"></i> Thêm môn học mới
+                </button>
+            </div>
+            <div id="subjects-grid" class="subjects-grid">
+                <!-- Rendered by JS -->
+            </div>
+        </section>
+
+        <!-- ===== SUBJECT DETAIL PAGE ===== -->
+        <section id="page-subject-detail" class="page">
+            <div class="page-header">
+                <button class="btn btn-ghost" id="btn-back-subjects">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </button>
+                <h1 id="detail-subject-name"></h1>
+                <p class="subtitle" id="detail-subject-desc"></p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-primary" id="btn-add-topic">
+                    <i class="fas fa-plus"></i> Thêm bài viết
+                </button>
+                <button class="btn btn-danger" id="btn-delete-subject">
+                    <i class="fas fa-trash"></i> Xóa môn học
+                </button>
+            </div>
+            <div id="topics-list" class="topics-list">
+                <!-- Rendered by JS -->
+            </div>
+        </section>
+
+        <!-- ===== TOPIC DETAIL PAGE ===== -->
+        <section id="page-topic-detail" class="page">
+            <div class="page-header">
+                <button class="btn btn-ghost" id="btn-back-topics">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </button>
+                <h1 id="detail-topic-title"></h1>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-secondary" id="btn-edit-topic">
+                    <i class="fas fa-edit"></i> Chỉnh sửa
+                </button>
+                <button class="btn btn-danger" id="btn-delete-topic">
+                    <i class="fas fa-trash"></i> Xóa bài viết
+                </button>
+            </div>
+            <div id="topic-content" class="topic-content">
+                <!-- Rendered by JS -->
+            </div>
+        </section>
+
+        <!-- ===== NOTES PAGE ===== -->
+        <section id="page-notes" class="page">
+            <div class="page-header">
+                <h1>📝 Ghi chú nhanh</h1>
+                <p class="subtitle">Ghi lại mọi ý tưởng, ghi chú quan trọng</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-primary" id="btn-add-note">
+                    <i class="fas fa-plus"></i> Thêm ghi chú
+                </button>
+            </div>
+            <div id="notes-grid" class="notes-grid">
+                <!-- Rendered by JS -->
+            </div>
+        </section>
+
+        <!-- ===== PROGRESS PAGE ===== -->
+        <section id="page-progress" class="page">
+            <div class="page-header">
+                <h1>📊 Tiến độ học tập</h1>
+                <p class="subtitle">Theo dõi quá trình học tập của bạn</p>
+            </div>
+            <div id="progress-content" class="progress-content">
+                <div class="progress-overview">
+                    <div class="progress-card">
+                        <h3>Tổng quan</h3>
+                        <div class="progress-stats" id="progress-stats">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
+                    <div class="progress-card">
+                        <h3>Hoạt động gần đây</h3>
+                        <div id="recent-activity" class="recent-activity">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== EXAMS PAGE ===== -->
+        <section id="page-exams" class="page">
+            <div class="page-header">
+                <h1>📝 Ôn thi giữa kỳ / cuối kỳ</h1>
+                <p class="subtitle">Các module luyện đề thi chuyên biệt cho từng môn học</p>
+            </div>
+            
+            <div class="subjects-grid">
+                <!-- Môn Xử lý tín hiệu số -->
+                <a href="dsp_exam_prep/index.html" target="_blank" class="subject-card" style="--card-color: #ff4d6d; text-decoration: none; color: inherit;">
+                    <div style="position:absolute;top:0;left:0;right:0;height:4px;background:#ff4d6d;border-radius:16px 16px 0 0"></div>
+                    <div class="subject-card-icon" style="background:#ff4d6d15;color:#ff4d6d">
+                        <i class="fas fa-wave-square"></i>
+                    </div>
+                    <h3>Xử lý tín hiệu số</h3>
+                    <p style="color: var(--text-secondary);">Bộ đề luyện tập Giữa kỳ & Cuối kỳ (Giao diện Sakura 🌸)</p>
+                </a>
+
+                <!-- Môn Kỹ thuật vi xử lý -->
+                <a href="Ky_thuat_vi_xu_ly/index.html" target="_blank" class="subject-card" style="--card-color: #2563eb; text-decoration: none; color: inherit;">
+                    <div style="position:absolute;top:0;left:0;right:0;height:4px;background:#2563eb;border-radius:16px 16px 0 0"></div>
+                    <div class="subject-card-icon" style="background:#2563eb15;color:#2563eb">
+                        <i class="fas fa-microchip"></i>
+                    </div>
+                    <h3>Kỹ thuật vi xử lý</h3>
+                    <p style="color: var(--text-secondary);">Hệ thống trắc nghiệm 8086 (Giao diện Modern ⚡)</p>
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ===== MODAL: Add/Edit Subject ===== -->
+    <div id="modal-subject" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modal-subject-title">Thêm môn học mới</h2>
+                <button class="modal-close" data-modal="modal-subject">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="subject-name">Tên môn học <span class="required">*</span></label>
+                    <input type="text" id="subject-name" placeholder="Ví dụ: Kỹ thuật vi xử lý">
+                </div>
+                <div class="form-group">
+                    <label for="subject-desc">Mô tả</label>
+                    <textarea id="subject-desc" rows="3" placeholder="Mô tả ngắn về môn học..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="subject-icon">Biểu tượng</label>
+                    <div class="icon-picker" id="icon-picker">
+                        <button class="icon-option active" data-icon="fa-microchip"><i class="fas fa-microchip"></i></button>
+                        <button class="icon-option" data-icon="fa-laptop-code"><i class="fas fa-laptop-code"></i></button>
+                        <button class="icon-option" data-icon="fa-calculator"><i class="fas fa-calculator"></i></button>
+                        <button class="icon-option" data-icon="fa-flask"><i class="fas fa-flask"></i></button>
+                        <button class="icon-option" data-icon="fa-atom"><i class="fas fa-atom"></i></button>
+                        <button class="icon-option" data-icon="fa-brain"><i class="fas fa-brain"></i></button>
+                        <button class="icon-option" data-icon="fa-network-wired"><i class="fas fa-network-wired"></i></button>
+                        <button class="icon-option" data-icon="fa-database"><i class="fas fa-database"></i></button>
+                        <button class="icon-option" data-icon="fa-code"><i class="fas fa-code"></i></button>
+                        <button class="icon-option" data-icon="fa-robot"><i class="fas fa-robot"></i></button>
+                        <button class="icon-option" data-icon="fa-language"><i class="fas fa-language"></i></button>
+                        <button class="icon-option" data-icon="fa-globe"><i class="fas fa-globe"></i></button>
+                        <button class="icon-option" data-icon="fa-paint-brush"><i class="fas fa-paint-brush"></i></button>
+                        <button class="icon-option" data-icon="fa-music"><i class="fas fa-music"></i></button>
+                        <button class="icon-option" data-icon="fa-graduation-cap"><i class="fas fa-graduation-cap"></i></button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Màu sắc</label>
+                    <div class="color-picker" id="color-picker">
+                        <button class="color-option active" data-color="#2563eb" style="background:#2563eb"></button>
+                        <button class="color-option" data-color="#0891b2" style="background:#0891b2"></button>
+                        <button class="color-option" data-color="#059669" style="background:#059669"></button>
+                        <button class="color-option" data-color="#7c3aed" style="background:#7c3aed"></button>
+                        <button class="color-option" data-color="#db2777" style="background:#db2777"></button>
+                        <button class="color-option" data-color="#ea580c" style="background:#ea580c"></button>
+                        <button class="color-option" data-color="#ca8a04" style="background:#ca8a04"></button>
+                        <button class="color-option" data-color="#475569" style="background:#475569"></button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" data-modal="modal-subject">Hủy</button>
+                <button class="btn btn-primary" id="btn-save-subject">Lưu môn học</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: Add/Edit Topic ===== -->
+    <div id="modal-topic" class="modal-overlay">
+        <div class="modal modal-large">
+            <div class="modal-header">
+                <h2 id="modal-topic-title">Thêm bài viết mới</h2>
+                <button class="modal-close" data-modal="modal-topic">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="topic-title">Tiêu đề <span class="required">*</span></label>
+                    <input type="text" id="topic-title" placeholder="Tiêu đề bài viết...">
+                </div>
+                <div class="form-group">
+                    <label for="topic-content-input">Nội dung</label>
+                    <div class="editor-toolbar">
+                        <button class="toolbar-btn" data-format="bold" title="In đậm"><i class="fas fa-bold"></i></button>
+                        <button class="toolbar-btn" data-format="italic" title="In nghiêng"><i class="fas fa-italic"></i></button>
+                        <button class="toolbar-btn" data-format="heading" title="Tiêu đề"><i class="fas fa-heading"></i></button>
+                        <button class="toolbar-btn" data-format="code" title="Code"><i class="fas fa-code"></i></button>
+                        <button class="toolbar-btn" data-format="list" title="Danh sách"><i class="fas fa-list-ul"></i></button>
+                        <button class="toolbar-btn" data-format="link" title="Liên kết"><i class="fas fa-link"></i></button>
+                    </div>
+                    <textarea id="topic-content-input" rows="15" placeholder="Viết nội dung bài viết... (Hỗ trợ Markdown)"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" data-modal="modal-topic">Hủy</button>
+                <button class="btn btn-primary" id="btn-save-topic">Lưu bài viết</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: Add/Edit Note ===== -->
+    <div id="modal-note" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modal-note-title">Thêm ghi chú mới</h2>
+                <button class="modal-close" data-modal="modal-note">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="note-title">Tiêu đề</label>
+                    <input type="text" id="note-title" placeholder="Tiêu đề ghi chú...">
+                </div>
+                <div class="form-group">
+                    <label for="note-content">Nội dung</label>
+                    <textarea id="note-content" rows="6" placeholder="Viết ghi chú..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Màu ghi chú</label>
+                    <div class="color-picker" id="note-color-picker">
+                        <button class="color-option active" data-color="#dbeafe" style="background:#dbeafe"></button>
+                        <button class="color-option" data-color="#d1fae5" style="background:#d1fae5"></button>
+                        <button class="color-option" data-color="#fef3c7" style="background:#fef3c7"></button>
+                        <button class="color-option" data-color="#fce7f3" style="background:#fce7f3"></button>
+                        <button class="color-option" data-color="#ede9fe" style="background:#ede9fe"></button>
+                        <button class="color-option" data-color="#f1f5f9" style="background:#f1f5f9"></button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" data-modal="modal-note">Hủy</button>
+                <button class="btn btn-primary" id="btn-save-note">Lưu ghi chú</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CONFIRM DIALOG ===== -->
+    <div id="modal-confirm" class="modal-overlay">
+        <div class="modal modal-small">
+            <div class="modal-header">
+                <h2>Xác nhận</h2>
+                <button class="modal-close" data-modal="modal-confirm">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" data-modal="modal-confirm">Hủy</button>
+                <button class="btn btn-danger" id="btn-confirm-action">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TOAST NOTIFICATION ===== -->
+    <!-- ===== AUTH MODAL ===== -->
+    <div id="modal-auth" class="modal-overlay">
+        <div class="modal modal-small">
+            <div class="modal-header">
+                <h2><i class="fas fa-shield-alt" style="color:var(--blue-600)"></i> Xác thực quản trị</h2>
+                <button class="modal-close" data-modal="modal-auth">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px">Nhập mật khẩu để mở quyền chỉnh sửa nội dung.</p>
+                <div class="form-group">
+                    <label for="auth-password"><i class="fas fa-key"></i> Mật khẩu</label>
+                    <input type="password" id="auth-password" placeholder="Nhập mật khẩu bảo mật..." autocomplete="off">
+                </div>
+                <div id="auth-error" style="display:none;color:#ef4444;font-size:12px;margin-top:8px;font-weight:600"><i class="fas fa-exclamation-triangle"></i> Sai mật khẩu!</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" data-modal="modal-auth">Hủy</button>
+                <button class="btn btn-primary" id="btn-auth-submit"><i class="fas fa-unlock"></i> Xác thực</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- ===== AI CHAT WIDGET ===== -->
+    <button id="ai-fab" class="ai-fab" aria-label="Mở trợ lý AI">
+        <i class="fas fa-robot ai-fab-icon"></i>
+        <i class="fas fa-times ai-fab-close"></i>
+        <div class="ai-fab-pulse"></div>
+    </button>
+
+    <div id="ai-panel" class="ai-panel">
+        <div class="ai-panel-header">
+            <div class="ai-panel-title">
+                <div class="ai-avatar"><i class="fas fa-robot"></i></div>
+                <div>
+                    <h3>Trợ Lý AI</h3>
+                    <div id="ai-status" class="ai-status">Sẵn sàng</div>
+                </div>
+            </div>
+            <div class="ai-panel-actions">
+                <button id="ai-settings-btn" class="ai-header-btn" title="Cài đặt API Key"><i class="fas fa-cog"></i></button>
+                <button id="ai-clear-btn" class="ai-header-btn" title="Xóa lịch sử cuộc trò chuyện"><i class="fas fa-trash-alt"></i></button>
+            </div>
+        </div>
+
+        <div id="ai-settings" class="ai-settings">
+            <div class="ai-settings-group">
+                <label>Chọn Model (Gợi ý dùng Gemini vì miễn phí)</label>
+                <div class="ai-model-selector">
+                    <button class="ai-model-btn active" data-model="gemini">
+                        <div class="ai-model-dot" style="background:#4ade80"></div>
+                        Gemini 1.5
+                        <span class="ai-model-badge free">Miễn phí</span>
+                    </button>
+                    <button class="ai-model-btn" data-model="chatgpt">
+                        <div class="ai-model-dot" style="background:#facc15"></div>
+                        ChatGPT
+                    </button>
+                    <button class="ai-model-btn" data-model="claude">
+                        <div class="ai-model-dot" style="background:#f43f5e"></div>
+                        Claude 3.5
+                    </button>
+                </div>
+            </div>
+            <div class="ai-settings-group">
+                <label>API Key</label>
+                <div class="ai-key-input-wrap">
+                    <input type="password" id="ai-api-key" placeholder="Nhập API Key vào đây...">
+                    <button id="ai-key-save" class="ai-key-save" title="Lưu API Key"><i class="fas fa-save"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <div id="ai-messages" class="ai-messages">
+            <div class="ai-msg ai-msg-bot">
+                <div class="ai-msg-avatar"><i class="fas fa-robot"></i></div>
+                <div class="ai-msg-bubble">
+                    <p>Chào bạn! Mình là AI học tập thông minh. Mình có thể giả lập hướng dẫn giải toán, lập trình hay giải thích mọi khái niệm!</p>
+                    <div class="ai-suggestions">
+                        <button class="ai-suggest-btn" data-prompt="Cách tự học Assembly 8086">💻 Học Assembly</button>
+                        <button class="ai-suggest-btn" data-prompt="Lên ý tưởng làm web luyện thi">💡 Ý tưởng Web</button>
+                        <button class="ai-suggest-btn" data-prompt="Hướng dẫn làm backend Nodejs">🌐 Backend Nodejs</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ai-input-area">
+            <div id="ai-context-bar" class="ai-context-bar" style="display: none;">
+                <i class="fas fa-reply"></i>
+                <span id="ai-context-text">Đang trả lời câu hỏi...</span>
+                <button id="ai-context-clear"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="ai-input-wrap">
+                <textarea id="ai-input" rows="1" placeholder="Hỏi AI bất cứ điều gì... (Nhấn Shift+Enter xuống dòng)"></textarea>
+                <button id="ai-send-btn" class="ai-send-btn"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+    <!-- App Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="seed-data.js"></script>
+    <script src="auth.js"></script>
+    <script src="app.js"></script>
+    <script src="ai-chat.js"></script>
+</body>
+</html>

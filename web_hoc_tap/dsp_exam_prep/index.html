@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="/dsp_exam_prep/">
+    <title>Xử Lý Tín Hiệu Số - Luyện Đề Sakura</title>
+    <meta name="description" content="Trang luyện đề thi môn Xử Lý Tín Hiệu Số - Giữa kỳ và Cuối kỳ">
+    <link rel="stylesheet" href="/dsp_exam_prep/style.css">
+    <link rel="stylesheet" href="/ai-chat.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+            startup: { typeset: false }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+    <div id="sakura-container" aria-hidden="true"></div>
+
+    <div class="app-shell">
+        <!-- HEADER -->
+        <div class="top-header">
+            <div class="logo-area">
+                <span class="logo-icon">🌸</span>
+                <h1>Xử Lý Tín Hiệu Số</h1>
+                <span class="logo-icon">🌸</span>
+            </div>
+            <p class="subtitle">Trang Luyện Đề Thi &mdash; Chủ Đề Sakura</p>
+            <div class="header-controls">
+                <nav id="main-nav">
+                    <button class="nav-btn active" id="btn-midterm" onclick="switchTab('midterm')">🌸 Giữa Kỳ</button>
+                    <button class="nav-btn locked" id="btn-final">🔒 Cuối Kỳ</button>
+                </nav>
+                <div class="exam-selector">
+                    <label for="exam-select">Chọn đề:</label>
+                    <select id="exam-select" onchange="renderExam()"></select>
+                </div>
+            </div>
+        </div>
+
+        <!-- SPLIT PANEL -->
+        <div class="split-panel" id="split-panel">
+
+            <!-- LEFT: Đề bài -->
+            <div class="panel panel-left" id="panel-left">
+                <div class="panel-title">
+                    <i>📄</i> Đề Bài
+                </div>
+                <div id="exam-content" class="exam-paper">
+                    <p class="placeholder-msg">Vui lòng chọn đề thi từ danh sách phía trên.</p>
+                </div>
+            </div>
+
+            <!-- DIVIDER -->
+            <div class="panel-divider" id="panel-divider"></div>
+
+            <!-- RIGHT: Đáp án -->
+            <div class="panel panel-right" id="panel-right">
+                <div class="panel-title">
+                    <i>✏️</i> Đáp Án
+                    <div class="answer-actions">
+                        <button class="btn-sm" onclick="clearAllAnswers()" title="Xóa tất cả đáp án">🗑 Xóa hết</button>
+                        <button class="btn-sm btn-save" onclick="saveAllAnswers()" title="Lưu đáp án">💾 Lưu</button>
+                    </div>
+                </div>
+                <div id="answer-content" class="answer-paper">
+                    <p class="placeholder-msg">Đáp án sẽ hiện ở đây sau khi bạn chọn đề.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- ===== AI CHAT WIDGET ===== -->
+    <button id="ai-fab" class="ai-fab" aria-label="Mở trợ lý AI">
+        <i class="fas fa-robot ai-fab-icon"></i>
+        <i class="fas fa-times ai-fab-close"></i>
+        <div class="ai-fab-pulse"></div>
+    </button>
+
+    <div id="ai-panel" class="ai-panel">
+        <div class="ai-panel-header">
+            <div class="ai-panel-title">
+                <div class="ai-avatar"><i class="fas fa-robot"></i></div>
+                <div>
+                    <h3>Trợ Lý AI</h3>
+                    <div id="ai-status" class="ai-status">Sẵn sàng</div>
+                </div>
+            </div>
+            <div class="ai-panel-actions">
+                <button id="ai-settings-btn" class="ai-header-btn" title="Cài đặt API Key"><i class="fas fa-cog"></i></button>
+                <button id="ai-clear-btn" class="ai-header-btn" title="Xóa lịch sử cuộc trò chuyện"><i class="fas fa-trash-alt"></i></button>
+            </div>
+        </div>
+
+        <div id="ai-settings" class="ai-settings">
+            <div class="ai-settings-group">
+                <label>Chọn Model (Gợi ý dùng Gemini vì miễn phí)</label>
+                <div class="ai-model-selector">
+                    <button class="ai-model-btn active" data-model="gemini">
+                        <div class="ai-model-dot" style="background:#4ade80"></div>
+                        Gemini 1.5 Flash
+                        <span class="ai-model-badge free">Miễn phí</span>
+                    </button>
+                    <button class="ai-model-btn" data-model="chatgpt">
+                        <div class="ai-model-dot" style="background:#facc15"></div>
+                        ChatGPT
+                    </button>
+                    <button class="ai-model-btn" data-model="claude">
+                        <div class="ai-model-dot" style="background:#f43f5e"></div>
+                        Claude 3.5
+                    </button>
+                </div>
+            </div>
+            <div class="ai-settings-group">
+                <label>API Key</label>
+                <div class="ai-key-input-wrap">
+                    <input type="password" id="ai-api-key" placeholder="Nhập API Key vào đây...">
+                    <button id="ai-key-save" class="ai-key-save" title="Lưu API Key"><i class="fas fa-save"></i></button>
+                </div>
+                <!-- <small class="ai-key-hint">Dùng key có sẵn kết hợp cùng <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>.</small> -->
+            </div>
+        </div>
+
+        <div id="ai-messages" class="ai-messages">
+            <div class="ai-msg ai-msg-bot">
+                <div class="ai-msg-avatar"><i class="fas fa-robot"></i></div>
+                <div class="ai-msg-bubble">
+                    <p>Chào bạn! Mình là trợ lý AI học tập. Mình có thể giải thích công thức, code hay bất cứ kiến thức Xử lý tín hiệu số nào bạn cần!</p>
+                    <div class="ai-suggestions">
+                        <button class="ai-suggest-btn" data-prompt="Giải thích các bước biến đổi DFT">💡 DFT là gì?</button>
+                        <button class="ai-suggest-btn" data-prompt="Làm sao để vẽ biểu đồ đáp ứng tần số?">📈 Vẽ đáp ứng tần số</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ai-input-area">
+            <div id="ai-context-bar" class="ai-context-bar" style="display: none;">
+                <i class="fas fa-reply"></i>
+                <span id="ai-context-text">Đang trả lời câu hỏi...</span>
+                <button id="ai-context-clear"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="ai-input-wrap">
+                <textarea id="ai-input" rows="1" placeholder="Hỏi AI bất cứ điều gì... (Nhấn Shift+Enter xuống dòng)"></textarea>
+                <button id="ai-send-btn" class="ai-send-btn"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="/ai-chat.js"></script>
+    <script src="/dsp_exam_prep/script.js"></script>
+</body>
+</html>

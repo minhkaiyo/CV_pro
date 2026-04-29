@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trắc nghiệm Vi Xử Lý 8086 | HUST Self Study</title>
+  <meta name="description" content="Ứng dụng ôn tập trắc nghiệm Kỹ thuật Vi xử lý Intel 8086 - Đại học Bách khoa Hà Nội">
+  <link rel="icon" href="../logo.png" type="image/png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Subtle animated background -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+  <div class="bg-glow bg-glow-3"></div>
+
+  <!-- Tooltip element -->
+  <div id="hintTooltip" class="hint-tooltip">
+    <div class="hint-tooltip-title" id="hintTitle"></div>
+    <div class="hint-tooltip-body" id="hintBody"></div>
+  </div>
+
+  <!-- ===== LANDING ===== -->
+  <div id="landing" class="screen active">
+    <div class="landing-container">
+      <div class="landing-header">
+        <div class="landing-badge"><span class="badge-dot"></span>HUST — Kỹ thuật Vi xử lý</div>
+        <h1 class="landing-title">
+          <span class="title-line-1">Quiz Ôn Tập</span>
+          <span class="title-line-2">Vi Xử Lý 8086</span>
+        </h1>
+        <p class="landing-sub">Luyện thi giữa kỳ • 150+ câu hỏi • Giải thích chi tiết • Gợi ý thông minh</p>
+      </div>
+
+      <!-- Exam Set Selector -->
+      <div class="section-label">📋 Chọn bộ đề</div>
+      <div class="set-grid" id="setGrid">
+        <div class="set-card selected" data-set="all">
+          <div class="set-icon">📚</div>
+          <div class="set-info">
+            <div class="set-name">Tất cả câu hỏi</div>
+            <div class="set-desc">Trộn ngẫu nhiên mọi bộ đề</div>
+          </div>
+          <div class="set-count" id="countAll"></div>
+        </div>
+        <div class="set-card" data-set="exam2023">
+          <div class="set-icon">📝</div>
+          <div class="set-info">
+            <div class="set-name">Đề thi 2023.2</div>
+            <div class="set-desc">Đề chính thức giữa kỳ 19/04/2024</div>
+          </div>
+          <div class="set-count" id="countExam"></div>
+        </div>
+        <div class="set-card" data-set="practice">
+          <div class="set-icon">🎯</div>
+          <div class="set-info">
+            <div class="set-name">Đề luyện tập</div>
+            <div class="set-desc">Độ khó tương đương đề thi</div>
+          </div>
+          <div class="set-count" id="countPractice"></div>
+        </div>
+        <div class="set-card" data-set="advanced">
+          <div class="set-icon">🔥</div>
+          <div class="set-info">
+            <div class="set-name">Đề nâng cao</div>
+            <div class="set-desc">Nhiều bẫy, trace phức tạp</div>
+          </div>
+          <div class="set-count" id="countAdvanced"></div>
+        </div>
+        <div class="set-card" data-set="extra">
+          <div class="set-icon">💎</div>
+          <div class="set-info">
+            <div class="set-name">Bổ sung chuyên sâu</div>
+            <div class="set-desc">Mở rộng kiến thức</div>
+          </div>
+          <div class="set-count" id="countExtra"></div>
+        </div>
+      </div>
+
+      <!-- Topic Filter -->
+      <div class="section-label">🏷️ Lọc theo chủ đề <span class="section-hint">(tuỳ chọn)</span></div>
+      <div class="topic-chips" id="topicChips">
+        <button class="chip active" data-topic="all">Tất cả</button>
+        <button class="chip" data-topic="number">🔢 Hệ đếm</button>
+        <button class="chip" data-topic="register">📦 Thanh ghi</button>
+        <button class="chip" data-topic="addressing">📍 Địa chỉ</button>
+        <button class="chip" data-topic="stack">📥 Stack</button>
+        <button class="chip" data-topic="flags">🚩 Cờ</button>
+        <button class="chip" data-topic="trace">🔍 Trace code</button>
+        <button class="chip" data-topic="arch">🏗️ Kiến trúc</button>
+        <button class="chip" data-topic="instruction">⚙️ Tập lệnh</button>
+      </div>
+
+      <!-- Mode -->
+      <div class="mode-row">
+        <button class="mode-btn active" data-mode="practice">
+          <span class="mode-icon">🎯</span>
+          <span>Luyện tập</span>
+          <span class="mode-desc">Xem giải thích ngay</span>
+        </button>
+        <button class="mode-btn" data-mode="exam">
+          <span class="mode-icon">📝</span>
+          <span>Thi thử</span>
+          <span class="mode-desc">45 phút • 30 câu</span>
+        </button>
+      </div>
+
+      <div class="ready-info" id="readyInfo">Sẵn sàng: <strong>0 câu</strong></div>
+      <button id="startBtn" class="start-btn">
+        <span>Bắt đầu</span>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h12M12 4l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== QUIZ ===== -->
+  <div id="quiz" class="screen">
+    <header class="quiz-topbar">
+      <div class="topbar-left">
+        <button id="backBtn" class="tb-btn" title="Thoát">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 14L6 9l5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <span class="tb-counter" id="questionCounter">1/30</span>
+        <span class="tb-tag" id="topicLabel">Tất cả</span>
+      </div>
+      <div class="topbar-right">
+        <div id="timerBox" class="tb-timer hidden">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M7 4v3l2 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span id="timer">45:00</span>
+        </div>
+        <div class="tb-score">
+          <span id="scoreDisplay">0</span>
+          <span class="tb-score-label">điểm</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="progress-track"><div id="progressBar" class="progress-fill"></div></div>
+
+    <main class="quiz-main">
+      <div id="questionCard" class="q-card">
+        <div class="q-badge" id="qNumber">Câu 1</div>
+        <div class="q-text" id="qText"></div>
+        <pre class="q-code hidden" id="qCode"></pre>
+        <div class="q-options" id="optionsContainer"></div>
+      </div>
+
+      <div id="explanation" class="expl hidden">
+        <div class="expl-head"><span id="explIcon">💡</span><span id="explTitle">Giải thích</span></div>
+        <div id="explText" class="expl-body"></div>
+      </div>
+
+      <div class="q-actions">
+        <button id="nextBtn" class="next-btn hidden">
+          <span id="nextBtnText">Câu tiếp theo</span>
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 9h10M10 4l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <!-- ===== RESULT ===== -->
+  <div id="result" class="screen">
+    <div class="result-wrap">
+      <div id="resultEmoji" class="result-emoji">🏆</div>
+      <h2 id="resultTitle" class="result-title">Xuất sắc!</h2>
+
+      <div class="score-ring">
+        <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="ring-bg"/><circle cx="60" cy="60" r="52" class="ring-fill" id="scoreCircle"/></svg>
+        <div class="ring-label"><span id="finalScore">0</span><span class="ring-total" id="totalQuestions">/30</span></div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat green"><div class="stat-val" id="correctCount">0</div><div class="stat-lbl">Đúng ✅</div></div>
+        <div class="stat red"><div class="stat-val" id="wrongCount">0</div><div class="stat-lbl">Sai ❌</div></div>
+        <div class="stat yellow"><div class="stat-val" id="timeSpent">0:00</div><div class="stat-lbl">Thời gian ⏱️</div></div>
+        <div class="stat blue"><div class="stat-val" id="pctDisplay">0%</div><div class="stat-lbl">Tỷ lệ 📊</div></div>
+      </div>
+
+      <div id="reviewSection" class="reviews"></div>
+
+      <div class="result-btns">
+        <button id="retryBtn" class="btn-primary">🔄 Làm lại</button>
+        <button id="homeBtn" class="btn-ghost">🏠 Trang chủ</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="hints.js"></script>
+  <script src="questions.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
