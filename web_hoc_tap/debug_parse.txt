@@ -1,0 +1,42 @@
+Index: 62
+Error: Expecting ',' delimiter: line 1 column 60 (char 59)
+Raw match:
+{set:"advanced",topic:"trace",text:"AX = ? sau đoạn code:",
+ code:"MOV AX, 1\nMOV CX, 10\nLAP:\n  SHL AX, 1\n  LOOP LAP",
+ options:["0020h","0400h","000Ah","0014h"],answer:1,
+ explanation:"SHL 1 lặp 10 lần = AX×2¹⁰. AX = 1×1024 = 0400h."}
+Processed s:
+{"set":"advanced","topic":"trace","text":"AX = ? sau đoạn "code":",
+ "code":"MOV AX, 1\nMOV CX, 10\nLAP:\n  SHL AX, 1\n  LOOP LAP",
+ "options":["0020h","0400h","000Ah","0014h"],"answer":1,
+ "explanation":"SHL 1 lặp 10 lần = AX×2¹⁰. AX = 1×1024 = 0400h."}
+==================================================
+Index: 124
+Error: Expecting ',' delimiter: line 1 column 53 (char 52)
+Raw match:
+{set:"midterm1",topic:"trace",text:"Cho đoạn code: XOR AX, AX / ADD AX, 5 / SHL AX, 1. Kết quả trong AX là bao nhiêu?",
+ options:["000Ah","000Bh","0005h","0000h"],answer:0,
+ explanation:"XOR AX,AX làm AX=0. ADD AX,5 làm AX=5. SHL AX,1 dịch trái 1 bit (nhân 2) làm AX=10 (000Ah)."}
+Processed s:
+{"set":"midterm1","topic":"trace","text":"Cho đoạn "code": XOR AX, AX / ADD AX, 5 / SHL AX, 1. Kết quả trong AX là bao nhiêu?",
+ "options":["000Ah","000Bh","0005h","0000h"],"answer":0,
+ "explanation":"XOR AX,AX làm AX=0. ADD AX,5 làm AX=5. SHL AX,1 dịch trái 1 bit (nhân 2) làm AX=10 (000Ah)."}
+==================================================
+Index: 144
+Error: Expecting ',' delimiter: line 1 column 53 (char 52)
+Raw match:
+{set:"midterm3",topic:"trace",text:"Cho đoạn code: MOV CX, 0 / LAP: LOOP LAP. Vòng lặp này sẽ chạy bao nhiêu lần?",
+ options:["0 lần","1 lần","Vô hạn","65536 lần"],answer:3,
+ explanation:"Lệnh LOOP thực hiện: giảm CX trước, rồi mới kiểm tra CX khác 0. CX=0 giảm đi 1 thành FFFFh (khác 0), nên nó sẽ lặp 65536 lần cho đến khi CX về lại 0."}
+Processed s:
+{"set":"midterm3","topic":"trace","text":"Cho đoạn "code": MOV CX, 0 / LAP: LOOP LAP. Vòng lặp này sẽ chạy bao nhiêu lần?",
+ "options":["0 lần","1 lần","Vô hạn","65536 lần"],"answer":3,
+ "explanation":"Lệnh LOOP thực hiện: giảm CX trước, rồi mới kiểm tra CX khác 0. CX=0 giảm đi 1 thành FFFFh (khác 0), nên nó sẽ lặp 65536 lần cho đến khi CX về lại 0."}
+==================================================
+Index: 327
+Error: Unterminated string starting at: line 1 column 143 (char 142)
+Raw match:
+{"set": "extra", "topic": "trace", "text": "Vòng lặp 'for (int i=0; i<10; i++)' trong 8086 thường sử dụng thanh ghi nào làm bộ đếm?", "code": "for (int i = 0; i < 10; i++) {\n    // do something\n}", "options": ["AX", "BX", "CX", "DX"], "answer": 2, "explanation": "Thanh ghi CX (Count Register) là thanh ghi mặc định cho các phép toán lặp (lệnh LOOP)."}
+Processed s:
+{"set": "extra", "topic": "trace", "text": "Vòng lặp 'for (int i=0; i<10; i++)' trong 8086 thường sử dụng thanh ghi nào làm bộ đếm?", "code": "for (int i = 0; i < 10; i++) {\n    
+==================================================

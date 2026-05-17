@@ -2,8 +2,8 @@
 //   QUIZ ENGINE with Hint Tooltip System
 // =============================================
 
-const SET_NAMES = {all:"Tất cả",exam2023:"Đề 2023.2",practice:"Luyện tập",advanced:"Nâng cao",extra:"Bổ sung"};
-const TOPIC_NAMES = {all:"Tất cả",number:"Hệ đếm",register:"Thanh ghi",addressing:"Địa chỉ",stack:"Stack",flags:"Cờ",trace:"Trace",arch:"Kiến trúc",instruction:"Tập lệnh"};
+const SET_NAMES = {all:"All",exam2023:"Exam 2023.2",practice:"Practice",advanced:"Advanced",extra:"Extra", midterm1:"Mock 1", midterm2:"Mock 2", midterm3:"Mock 3", exam_prep_all: "Syllabus"};
+const TOPIC_NAMES = {all:"All",number:"Number Systems",register:"Registers",addressing:"Addressing",stack:"Stack",flags:"Flags",trace:"Trace",arch:"Architecture",instruction:"Instruction Set", "Chapter 1": "Chapter 1", "Chapter 2": "Chapter 2", "Chapter 3": "Chapter 3", "Chapter 4": "Chapter 4"};
 
 let S = {mode:"practice",set:"all",topic:"all",questions:[],cur:0,score:0,answers:[],t0:null,timer:null,timeLeft:2700};
 
@@ -15,18 +15,22 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function updateCounts() {
-  const sets = {all:0,exam2023:0,practice:0,advanced:0,extra:0};
-  ALL_QUESTIONS.forEach(q => { sets[q.set]++; sets.all++; });
-  document.getElementById("countAll").textContent = sets.all + " câu";
-  document.getElementById("countExam").textContent = sets.exam2023 + " câu";
-  document.getElementById("countPractice").textContent = sets.practice + " câu";
-  document.getElementById("countAdvanced").textContent = sets.advanced + " câu";
-  document.getElementById("countExtra").textContent = sets.extra + " câu";
+  const sets = {all:0,exam2023:0,practice:0,advanced:0,extra:0, midterm1:0, midterm2:0, midterm3:0, exam_prep_all: 0};
+  ALL_QUESTIONS.forEach(q => { if (sets[q.set] !== undefined) sets[q.set]++; sets.all++; });
+  document.getElementById("countAll").textContent = sets.all + " questions";
+  document.getElementById("countExam").textContent = sets.exam2023 + " questions";
+  document.getElementById("countPractice").textContent = sets.practice + " questions";
+  document.getElementById("countAdvanced").textContent = sets.advanced + " questions";
+  document.getElementById("countExtra").textContent = sets.extra + " questions";
+  document.getElementById("countMidterm1").textContent = sets.midterm1 + " questions";
+  document.getElementById("countMidterm2").textContent = sets.midterm2 + " questions";
+  document.getElementById("countMidterm3").textContent = sets.midterm3 + " questions";
+  document.getElementById("countPrepAll").textContent = sets.exam_prep_all + " questions";
 }
 
 function applySelection() {
   const pool = getPool();
-  document.getElementById("readyInfo").innerHTML = `Sẵn sàng: <strong>${pool.length} câu</strong>`;
+  document.getElementById("readyInfo").innerHTML = `Ready: <strong>${pool.length} questions</strong>`;
 }
 
 function getPool() {
@@ -65,7 +69,16 @@ function bindAll() {
   document.getElementById("retryBtn").addEventListener("click", () => startQuiz());
   document.getElementById("homeBtn").addEventListener("click", () => window.location.href = "../index.html");
 
+  // Sidebar toggle
+  const sidebarToggle = document.getElementById("sidebar-toggle");
+  if (sidebarToggle) {
+    sidebarToggle.addEventListener("click", () => {
+      document.getElementById("sidebar").classList.toggle("collapsed");
+    });
+  }
+
   // Global hint tooltip
+
   document.addEventListener("mousemove", moveTooltip);
 }
 
@@ -154,7 +167,7 @@ function bindHints(container) {
 // ---- Quiz Flow ----
 function startQuiz() {
   let pool = getPool();
-  if (pool.length === 0) { alert("Không có câu hỏi nào! Hãy chọn bộ đề khác."); return; }
+  if (pool.length === 0) { alert("No questions found! Please select a different exam set."); return; }
 
   // Shuffle
   for (let i = pool.length - 1; i > 0; i--) {
@@ -199,7 +212,7 @@ function renderQ() {
   const total = S.questions.length;
 
   document.getElementById("questionCounter").textContent = `${S.cur + 1}/${total}`;
-  document.getElementById("qNumber").textContent = `Câu ${S.cur + 1}`;
+  document.getElementById("qNumber").textContent = `Question ${S.cur + 1}`;
   document.getElementById("scoreDisplay").textContent = S.score;
   document.getElementById("progressBar").style.width = `${(S.cur / total) * 100}%`;
 
@@ -254,13 +267,13 @@ function selectAnswer(sel) {
   expl.classList.remove("hidden", "correct-e", "wrong-e");
   expl.classList.add(ok ? "correct-e" : "wrong-e");
   document.getElementById("explIcon").textContent = ok ? "✅" : "❌";
-  document.getElementById("explTitle").textContent = ok ? "Chính xác!" : "Sai rồi!";
+  document.getElementById("explTitle").textContent = ok ? "Correct!" : "Wrong!";
   document.getElementById("explText").innerHTML = q.explanation;
 
   const nextBtn = document.getElementById("nextBtn");
   nextBtn.classList.remove("hidden");
   document.getElementById("nextBtnText").textContent =
-    S.cur < S.questions.length - 1 ? "Câu tiếp theo" : "Xem kết quả 🏆";
+    S.cur < S.questions.length - 1 ? "Next Question" : "View Results 🏆";
 }
 
 function nextQ() {
@@ -279,10 +292,10 @@ function showResults() {
   const mm = Math.floor(elapsed / 60), ss = elapsed % 60;
 
   let emoji, title;
-  if (pct >= 90) { emoji = "🏆"; title = "Xuất sắc!"; }
-  else if (pct >= 70) { emoji = "🎉"; title = "Tốt lắm!"; }
-  else if (pct >= 50) { emoji = "💪"; title = "Cố gắng thêm!"; }
-  else { emoji = "📖"; title = "Cần ôn lại nhiều hơn!"; }
+  if (pct >= 90) { emoji = "🏆"; title = "Excellent!"; }
+  else if (pct >= 70) { emoji = "🎉"; title = "Great Job!"; }
+  else if (pct >= 50) { emoji = "💪"; title = "Keep Trying!"; }
+  else { emoji = "📖"; title = "Needs More Review!"; }
 
   document.getElementById("resultEmoji").textContent = emoji;
   document.getElementById("resultTitle").textContent = title;
@@ -305,7 +318,7 @@ function showResults() {
   rev.innerHTML = "";
   if (wrong > 0) {
     const h = document.createElement("h3");
-    h.textContent = `📝 Các câu sai (${wrong})`;
+    h.textContent = `📝 Incorrect Questions (${wrong})`;
     rev.appendChild(h);
   }
   const letters = ["A","B","C","D"];
@@ -315,9 +328,9 @@ function showResults() {
     const d = document.createElement("div");
     d.className = "rev-item";
     d.innerHTML = `<span class="rev-icon">❌</span><div class="rev-body">
-      <div class="rev-q">Câu ${idx+1}: ${q.text.substring(0,90)}${q.text.length>90?"...":""}</div>
-      <div class="rev-ans">Bạn chọn: <strong>${letters[a.sel]}. ${q.options[a.sel]}</strong><br>
-      Đáp án: <strong class="rev-correct">${letters[a.correct]}. ${q.options[a.correct]}</strong><br>
+      <div class="rev-q">Question ${idx+1}: ${q.text.substring(0,90)}${q.text.length>90?"...":""}</div>
+      <div class="rev-ans">You selected: <strong>${letters[a.sel]}. ${q.options[a.sel]}</strong><br>
+      Correct answer: <strong class="rev-correct">${letters[a.correct]}. ${q.options[a.correct]}</strong><br>
       <em>${q.explanation}</em></div></div>`;
     rev.appendChild(d);
   });

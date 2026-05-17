@@ -1,114 +1,114 @@
 const SEED_SUBJECTS = [
     {
         id: 'ky-thuat-vi-xu-ly',
-        name: 'Kỹ thuật vi xử lý',
-        description: 'Tổng hợp kiến thức về kiến trúc máy tính, tập lệnh 8086 và lập trình Assembly.',
+        name: 'Microprocessors',
+        description: 'Comprehensive study of computer architecture, the 8086 instruction set, and Assembly programming.',
         icon: 'fa-microchip',
         color: '#2563eb',
         topics: [
             {
                 id: 'cau-truc-assembly-8086',
-                title: 'Cấu trúc chương trình Assembly 8086',
-                content: `## 📋 Tổng quan
+                title: '8086 Assembly Program Structure',
+                content: `## 📋 Overview
 
-Một chương trình Assembly 8086 chuẩn gồm 4 phần chính:
+A standard 8086 Assembly program consists of 4 main sections:
 
-### 1. Khai báo Model bộ nhớ
+### 1. Memory Model Declaration
 \`\`\`assembly
 .model small
 \`\`\`
-- **small**: Sử dụng 1 segment cho code (64KB) và 1 segment cho data (64KB).
-- Các loại khác: \`tiny\`, \`medium\`, \`compact\`, \`large\`, \`huge\`.
+- **small**: Uses 1 segment for code (64KB) and 1 segment for data (64KB).
+- Other options: \`tiny\`, \`medium\`, \`compact\`, \`large\`, \`huge\`.
 
-### 2. Khai báo Stack
+### 2. Stack Declaration
 \`\`\`assembly
 .stack 100h
 \`\`\`
-- Dành **256 byte** (100h) cho ngăn xếp.
-- Stack dùng để lưu tạm dữ liệu, địa chỉ trả về khi gọi hàm.
+- Allocates **256 bytes** (100h) for the stack.
+- Stack is used to temporarily store data and return addresses during function calls.
 
-### 3. Khai báo dữ liệu (.data)
+### 3. Data Declaration (.data)
 \`\`\`assembly
 .data
-    msg DB 'Hello World$'    ; Chuỗi kết thúc bằng $
-    num DW 1234h             ; Biến 16-bit (Word)
-    arr DB 10 DUP(0)         ; Mảng 10 phần tử, khởi tạo = 0
+    msg DB 'Hello World$'    ; String ending with $
+    num DW 1234h             ; 16-bit variable (Word)
+    arr DB 10 DUP(0)         ; Array of 10 elements, initialized to 0
 \`\`\`
-**Các kiểu dữ liệu:**
-| Từ khóa | Kích thước | Ý nghĩa |
+**Data types:**
+| Keyword | Size | Meaning |
 |---------|-----------|---------|
 | DB | 1 byte | Define Byte |
-| DW | 2 byte | Define Word |
-| DD | 4 byte | Define Doubleword |
+| DW | 2 bytes | Define Word |
+| DD | 4 bytes | Define Doubleword |
 
-### 4. Phần code (.code)
+### 4. Code Section (.code)
 \`\`\`assembly
 .code
 main proc
-    mov ax, @data     ; Nạp địa chỉ segment data
-    mov ds, ax        ; Đưa vào thanh ghi DS
+    mov ax, @data     ; Load the address of data segment
+    mov ds, ax        ; Move it to DS register
 
-    ; ... code xử lý ...
+    ; ... program logic ...
 
-    mov ah, 4Ch       ; Hàm thoát chương trình
-    int 21h           ; Gọi ngắt DOS
+    mov ah, 4Ch       ; Function to exit program
+    int 21h           ; Call DOS interrupt
 main endp
 end main
 \`\`\`
 
-### 5. Ngắt DOS quan trọng (INT 21h)
-| AH | Chức năng | Tham số |
+### 5. Important DOS Interrupts (INT 21h)
+| AH | Function | Parameters |
 |----|-----------|---------|
-| 01h | Nhập 1 ký tự | AL = ký tự nhập |
-| 02h | In 1 ký tự | DL = ký tự cần in |
-| 09h | In chuỗi | DX = địa chỉ chuỗi (kết thúc $) |
-| 0Ah | Nhập chuỗi | DX = địa chỉ buffer |
-| 4Ch | Thoát chương trình | AL = mã lỗi |`
+| 01h | Input a character | AL = input character |
+| 02h | Print a character | DL = character to print |
+| 09h | Print a string | DX = address of the string (must end with $) |
+| 0Ah | Input a string | DX = buffer address |
+| 4Ch | Exit program | AL = error code |`
             },
             {
                 id: 'lenh-in-chuoi-int21h',
-                title: 'Lệnh in chuỗi và ngắt INT 21h',
-                content: `## 🖨️ In chuỗi ra màn hình
+                title: 'String Output and INT 21h Interrupts',
+                content: `## 🖨️ Printing Strings to the Screen
 
-### Cú pháp cơ bản
+### Basic Syntax
 \`\`\`assembly
-mov ah, 09h      ; Chọn hàm 09h: In chuỗi
+mov ah, 09h      ; Select function 09h: Print string
 lea dx, msg      ; LEA = Load Effective Address
-int 21h          ; Gọi ngắt hệ thống DOS
+int 21h          ; Call DOS interrupt
 \`\`\`
 
-### Giải thích chi tiết từng dòng
+### Detailed Line-by-Line Explanation
 
-**Dòng 1: \`mov ah, 09h\`**
-- Thanh ghi **AH** chứa số hiệu hàm cần gọi.
-- **09h** = hàm in chuỗi ký tự ra màn hình console.
-- Quy ước: AH luôn được đặt trước khi gọi INT 21h.
+**Line 1: \`mov ah, 09h\`**
+- The **AH** register contains the function number to call.
+- **09h** = prints a character string to the console screen.
+- Convention: AH must always be set before calling INT 21h.
 
-**Dòng 2: \`lea dx, msg\`**
-- **LEA** (Load Effective Address) nạp **địa chỉ** của biến \`msg\` vào DX.
-- Tương đương: \`mov dx, OFFSET msg\`.
-- DX phải chỉ đến byte đầu tiên của chuỗi.
+**Line 2: \`lea dx, msg\`**
+- **LEA** (Load Effective Address) loads the **address** of the \`msg\` variable into DX.
+- Equivalent to: \`mov dx, OFFSET msg\`.
+- DX must point to the first byte of the string.
 
-**Dòng 3: \`int 21h\`**
-- **INT** (Interrupt) gọi ngắt mềm số 21h (ngắt DOS).
-- DOS sẽ đọc AH để biết cần thực hiện hàm nào.
-- Sau đó đọc DX để biết chuỗi nằm ở đâu.
-- In từng ký tự cho đến khi gặp dấu **$**.
+**Line 3: \`int 21h\`**
+- **INT** (Interrupt) calls software interrupt number 21h (DOS interrupt).
+- DOS reads AH to determine which function to execute.
+- It then reads DX to find where the string is in memory.
+- Prints each character until it encounters the **$** character.
 
-### ⚠️ Lưu ý quan trọng
-1. Chuỗi **PHẢI** kết thúc bằng ký tự \`$\` (mã ASCII 24h).
-2. Ký tự \`$\` **KHÔNG** được in ra màn hình.
-3. Nếu quên dấu \`$\`, chương trình sẽ in rác cho đến khi tình cờ gặp byte 24h trong bộ nhớ.
+### ⚠️ Critical Notes
+1. The string **MUST** end with the \`$\` character (ASCII code 24h).
+2. The \`$\` character itself is **NOT** printed to the screen.
+3. If you forget the \`$\`, the program will print garbage until it happens to find a 24h byte in memory.
 
-### Ví dụ hoàn chỉnh
+### Complete Example
 \`\`\`assembly
 .model small
 .stack 100h
 .data
     msg DB 'Hello, Assembly!', 0Dh, 0Ah, '$'
-    ;        Nội dung chuỗi  | CR | LF | Kết thúc
-    ; 0Dh = Carriage Return (về đầu dòng)
-    ; 0Ah = Line Feed (xuống dòng mới)
+    ;        String content  | CR | LF | End
+    ; 0Dh = Carriage Return (move cursor to start of line)
+    ; 0Ah = Line Feed (move cursor down to next line)
 .code
 main proc
     mov ax, @data
@@ -126,150 +126,151 @@ end main
             },
             {
                 id: 'thuat-toan-dao-chuoi',
-                title: 'Thuật toán đảo ngược chuỗi (String Reverse)',
-                content: `## 🔄 Đảo ngược chuỗi bằng Stack
+                title: 'String Reversing Algorithm',
+                content: `## 🔄 Reversing a String Using a Stack
 
-### 1. Ý tưởng thuật toán
-Sử dụng cơ chế **LIFO (Last In First Out)** của ngăn xếp (Stack):
-1. Đọc từng ký tự của chuỗi gốc → **PUSH** vào Stack.
-2. **POP** từng ký tự ra → tự động có thứ tự ngược lại.
+### 1. Algorithmic Idea
+Utilize the **LIFO (Last In First Out)** mechanism of the stack:
+1. Read each character of the source string → **PUSH** it onto the Stack.
+2. **POP** each character out → they will naturally come out in reverse order.
 
-> Ví dụ: Đưa "ABC" vào Stack → lấy ra được "CBA".
+> Example: PUSH "ABC" into Stack → POP gives "CBA".
 
-### 2. Các thanh ghi quan trọng
-| Thanh ghi | Chức năng |
+### 2. Key Registers
+| Register | Function |
 |-----------|-----------|
-| **SI** (Source Index) | Trỏ vào chuỗi nguồn (chuỗi gốc) |
-| **DI** (Destination Index) | Trỏ vào vùng nhớ đích (chuỗi đảo) |
-| **CX** (Counter) | Đếm số ký tự / số vòng lặp |
-| **AL** | Lưu tạm từng ký tự đang xử lý |
+| **SI** (Source Index) | Points to the source string (original string) |
+| **DI** (Destination Index) | Points to the destination memory (reversed string) |
+| **CX** (Counter) | Counts characters / controls loop iterations |
+| **AL** | Temporarily stores the character being processed |
 
-### 3. Code mẫu chi tiết (như bài 1_1.asm)
+### 3. Detailed Sample Code
 \`\`\`assembly
-; ====== BƯỚC 1: PUSH từng ký tự vào Stack ======
-    lea si, chuoi_goc    ; SI trỏ vào đầu chuỗi
-    mov cx, do_dai       ; CX = số ký tự
+; ====== STEP 1: PUSH each character onto Stack ======
+    lea si, original_string    ; SI points to start of string
+    mov cx, length             ; CX = number of characters
 
 push_loop:
-    mov al, [si]         ; Đọc 1 ký tự tại vị trí SI
-    push ax              ; Đẩy vào Stack (lưu ý: push 16-bit)
-    inc si               ; Dịch SI sang ký tự tiếp theo
-    loop push_loop       ; CX--, nếu CX≠0 thì lặp lại
+    mov al, [si]               ; Read 1 character at SI position
+    push ax                    ; Push onto Stack (note: push is 16-bit)
+    inc si                     ; Advance SI to the next character
+    loop push_loop             ; CX--, repeat if CX≠0
 
-; ====== BƯỚC 2: POP ra → chuỗi đảo ngược ======
-    lea di, chuoi_dao    ; DI trỏ vào vùng đích
-    mov cx, do_dai       ; Reset CX
+; ====== STEP 2: POP out → reversed string ======
+    lea di, reversed_string    ; DI points to destination
+    mov cx, length             ; Reset CX
 
 pop_loop:
-    pop ax               ; Lấy ký tự từ Stack
-    mov [di], al         ; Ghi vào vùng đích
-    inc di               ; Dịch DI sang vị trí tiếp
-    loop pop_loop        ; Lặp cho đến hết
+    pop ax                     ; Pop character from Stack
+    mov [di], al               ; Write to destination
+    inc di                     ; Advance DI to the next position
+    loop pop_loop              ; Repeat until done
 \`\`\`
 
-### 4. Minh họa quá trình
-Giả sử chuỗi gốc là **"HELLO"**:
+### 4. Step-by-Step Visualization
+Let the original string be **"HELLO"**:
 
-**Bước PUSH (đưa vào Stack):**
+**PUSH Step (entering Stack):**
 \`\`\`
 Push 'H' → Stack: [H]
 Push 'E' → Stack: [H, E]
 Push 'L' → Stack: [H, E, L]
 Push 'L' → Stack: [H, E, L, L]
-Push 'O' → Stack: [H, E, L, L, O]  ← đỉnh Stack
+Push 'O' → Stack: [H, E, L, L, O]  ← top of Stack
 \`\`\`
 
-**Bước POP (lấy ra):**
+**POP Step (retrieving):**
 \`\`\`
-Pop → 'O'   Chuỗi đảo: "O"
-Pop → 'L'   Chuỗi đảo: "OL"
-Pop → 'L'   Chuỗi đảo: "OLL"
-Pop → 'E'   Chuỗi đảo: "OLLE"
-Pop → 'H'   Chuỗi đảo: "OLLEH"  ✅
-\`\`\``
+Pop → 'O'   Reversed: "O"
+Pop → 'L'   Reversed: "OL"
+Pop → 'L'   Reversed: "OLL"
+Pop → 'E'   Reversed: "OLLE"
+Pop → 'H'   Reversed: "OLLEH"  ✅
+\`\`\`
+`
             }
         ]
     },
     {
         id: 'dien-tu-tuong-tu-1',
-        name: 'Điện tử tương tự 1',
-        description: 'Tổng quan về Transistor BJT, phân biệt các sơ đồ mạch khuếch đại: Emitter chung (EC), Base chung (BC), Collector chung (CC).',
+        name: 'Analog Electronics 1',
+        description: 'Overview of BJT Transistors and analysis of amplifier configurations: Common Emitter (CE), Common Base (CB), Common Collector (CC).',
         icon: 'fa-bolt',
         color: '#f59e0b',
         topics: [
             {
                 id: 'tong-quan-3-mach-bjt',
-                title: 'Tổng quan 3 kiểu mạch khuếch đại BJT: EC, BC, CC',
-                content: `## ⚡ Các cấu hình mạch khuếch đại Transistor
-Transistor lưỡng cực (BJT) có 3 cực: **B** (Base), **C** (Collector), **E** (Emitter). Tùy thuộc vào việc cực nào được dùng làm cực **chân chung** cho cả tín hiệu vào (Input) và ra (Output), ta có 3 kiểu mạch khuếch đại:
+                title: 'Overview of 3 BJT Amplifier Configurations: CE, CB, CC',
+                content: `## ⚡ Transistor Amplifier Configurations
+A Bipolar Junction Transistor (BJT) has 3 terminals: **B** (Base), **C** (Collector), and **E** (Emitter). Depending on which terminal is used as the **common ground** for both input and output signals, we have 3 amplifier configurations:
 
-![Các cấu hình mạch khuếch đại](/bjt-amplifiers.png)
+![Amplifier Configurations](/bjt-amplifiers.png)
 
-1. **Mạch Emitter chung (EC/CE):** Cực E được nối mass AC. Tín hiệu vào B, ra C.
-2. **Mạch Base chung (BC/CB):** Cực B được nối mass AC. Tín hiệu vào E, ra C.
-3. **Mạch Collector chung (CC/CE):** Cực C được nối Vcc (giống mass AC). Tín hiệu vào B, ra E.
+1. **Common Emitter (CE):** Emitter is connected to AC ground. Input is at B, output at C.
+2. **Common Base (CB):** Base is connected to AC ground. Input is at E, output at C.
+3. **Common Collector (CC):** Collector is connected to Vcc (acting as AC ground). Input is at B, output at E.
 
-### 📊 Bảng so sánh tổng quát
+### 📊 Comparative Analysis
 
-| Đặc tính | Emitter Chung (EC) | Base Chung (BC) | Collector Chung (CC) |
+| Feature | Common Emitter (CE) | Common Base (CB) | Common Collector (CC) |
 | :--- | :--- | :--- | :--- |
-| **Tín hiệu vào** | Cực B | Cực E | Cực B |
-| **Tín hiệu ra** | Cực C | Cực C | Cực E |
-| **Biến đổi góc pha** | **Đảo pha (180°)** | Đồng pha (0°) | Đồng pha (0°) |
-| **Hệ số KĐ Điện áp ($A_v$)** | Lớn | Lớn | Xấp xỉ 1 ($< 1$) |
-| **Hệ số KĐ Dòng điện ($A_i$)** | Lớn ($≈ \beta$) | Xấp xỉ 1 ($< 1$) | Lớn ($≈ \beta$) |
-| **Trở kháng vào ($R_{in}$)** | Trung bình (vài kΩ) | Rất Thấp (< 100Ω) | Rất Cao (vài chục kΩ) |
-| **Trở kháng ra ($R_{out}$)**| Trung bình - Cao | Rất Cao | Rất Thấp |
-| **Ứng dụng** | KĐ âm tần, KĐ điện áp chung | Khuếch đại cao tần (RF) | Mạch đệm (Buffer), KĐ dòng |
+| **Input Signal** | Base | Emitter | Base |
+| **Output Signal** | Collector | Collector | Emitter |
+| **Phase Shift** | **Inverted (180°)** | Non-inverted (0°) | Non-inverted (0°) |
+| **Voltage Gain ($A_v$)** | High | High | Approximately 1 ($< 1$) |
+| **Current Gain ($A_i$)** | High ($≈ \beta$) | Approximately 1 ($< 1$) | High ($≈ \beta$) |
+| **Input Impedance ($R_{in}$)** | Medium (a few kΩ) | Very Low (< 100Ω) | Very High (tens of kΩ) |
+| **Output Impedance ($R_{out}$)**| Medium - High | Very High | Very Low |
+| **Application** | Audio & general voltage amplification | High-frequency RF amplification | Buffer stage, current gain |
 
-Được sử dụng phổ biến nhất trên thực tế là **mạch EC** nhờ khả năng khuếch đại cả dòng và áp, giúp công suất ở ngõ ra đạt giá trị lớn nhất.`
+The **CE configuration** is the most widely used in practice because it provides both voltage and current gain, resulting in the highest overall power gain.`
             },
             {
                 id: 'chi-tiet-mach-ec',
-                title: 'Mạch khuếch đại Emitter Chung (EC)',
-                content: `## 🔌 Mạch Khuếch đại Emitter Chung (EC - Common Emitter)
+                title: 'Common Emitter (CE) Amplifiers',
+                content: `## 🔌 Common Emitter (CE) Amplifiers
 
-Đây là mạch được ứng dụng nhiều nhất trong kỹ thuật điện tử vì có hệ số khuếch đại công suất lớn nhất.
+The Common Emitter configuration is widely used because it yields the highest power gain among all BJT amplifiers.
 
-### 1. Đặc điểm cốt lõi:
-- **Nguyên lý:** Tín hiệu xoay chiều nhỏ ở đầu vào ($v_{in}$) đưa vào Base sẽ làm biến đổi dòng Base ($i_b$), dẫn tới biến đổi cực lớn dòng Collector ($i_c = \beta \cdot i_b$), từ đó làm sụt áp trên điện trở tải $R_C$ tạo thành điện áp ở ngõ ra.
-- **Tính đảo pha:** Đây là tính năng đặc trưng nhất. Khi tín hiệu đầu vào tăng, điện áp đầu ra sẽ giảm. Độ lệch pha giữa $V_{in}$ và $V_{out}$ là **180 độ**.
+### 1. Core Operating Principle:
+- **Concept:** A small AC input signal ($v_{in}$) applied to the Base induces variations in the Base current ($i_b$). This controls a much larger Collector current ($i_c = \beta \cdot i_b$), which flows through the load resistor $R_C$ to produce a significantly larger voltage swing at the output.
+- **Phase Inversion:** This is a key characteristic of the CE amplifier. When the input signal rises, the output voltage falls. The phase difference between $V_{in}$ and $V_{out}$ is exactly **180 degrees**.
 
-### 2. Các thông số chính:
-1. **Trở kháng vào ($R_{in}$):** Điện trở tĩnh nhìn từ Base vào (thường phụ thuộc vào điện trở phân cực và r_pi của BJT). Nằm ở mức **trung bình** (vài $k\Omega$).
-2. **Trở kháng ra ($R_{out}$):** Chịu ảnh hưởng chính ở điện trở cực thu $R_C$. Nằm mức **trung bình** đến **cao** (khoảng vài $10 k\Omega$).
-3. **Khuếch đại:** Khuếch đại tốt cả về dòng điện ($A_i$) và điện áp ($A_v$) nên **Hệ số khuếch đại công suất Rất Lớn**.
+### 2. Main Parameters:
+1. **Input Impedance ($R_{in}$):** The impedance seen looking into the Base (depends on bias resistors and BJT's $r_\pi$). It is **medium** (typically a few $k\Omega$).
+2. **Output Impedance ($R_{out}$):** Dominated by the Collector resistor $R_C$. It is **medium to high** (around a few $10 k\Omega$).
+3. **Gain:** Delivers good voltage gain ($A_v$) and current gain ($A_i$), leading to a **very high overall power gain**.
 
-### 3. Nhược điểm - Hiệu ứng Miller:
-Tụ ký sinh $C_{bc}$ giữa cực Base và Collector trong mạch EC sẽ bị khuếch đại lên gấp nhiều lần ($1 + A_v$). Điều này làm tăng điện dung đầu vào tương đương, làm giảm tần số cắt cao (giảm băng thông) của mạch, do đó nó không quá thích hợp cho sóng siêu cao tần ngẫu nhiên.`
+### 3. Limitation - The Miller Effect:
+The parasitic capacitance $C_{bc}$ between the Base and Collector terminals in a CE configuration is effectively multiplied by ($1 + A_v$). This significantly increases the input capacitance, lowering the high-frequency cutoff (bandwidth) of the amplifier. Therefore, it is less suitable for high-frequency RF systems.`
             },
             {
                 id: 'chi-tiet-mach-bc-c',
-                title: 'Mạch Base Chung (BC) và Collector Chung (CC)',
-                content: `## 📡 Mạch Khuếch đại Base Chung (BC)
-- Mạch này giữ cho tín hiệu cực B cố định với mass AC.
-- **Tính chất đặc biệt:** Không có hiện tượng đảo pha. ($V_{out}$ đồng pha cực tính với $V_{in}$).
-- **Ưu điểm về tần số:** Nhờ cấu trúc nền chung, tụ ký sinh $C_{bc}$ không chịu hiệu ứng Miller như ở mạch EC, vì vậy mạch BC thường xuyên được ứng dụng trong các thiết bị **công nghệ cao tần (RF / Radio Frequency)** hoặc ăng-ten.
-- **Trở kháng:** Vào rất thấp, ra rất cao. Vì vậy nó còn dùng để phối hợp trở kháng (từ Tải thấp -> Nguồn cao).
+                title: 'Common Base (CB) and Common Collector (CC) Amplifiers',
+                content: `## 📡 Common Base (CB) Amplifiers
+- The Base terminal is held at AC ground.
+- **Key Characteristic:** Non-inverting configuration. ($V_{out}$ is in-phase with $V_{in}$).
+- **Frequency Response:** Because the Base is grounded, the collector-base capacitance $C_{bc}$ is shielded, eliminating the Miller effect seen in CE amplifiers. Consequently, CB amplifiers are outstandingly suited for **high-frequency (RF / Radio Frequency)** and antenna systems.
+- **Impedance:** Very low input impedance, very high output impedance. Useful for impedance matching (low-impedance source to high-impedance load).
 
 ---
 
-## 🛡️ Mạch Khuếch đại Collector Chung (CC - Emitter Follower)
-- Mạch lấy điện áp ra từ cực E.
-- Gọi là **Emitter Follower (Bộ phát lặp)** vì điện áp đầu ra $V_e$ hầu như "đi theo" hoặc "bám vào" điện áp đầu vào $V_b$ ($V_e = V_b - 0.7V$).
-- **Không khuếch đại điện áp** ($A_v \approx 1$).
-- **Tính chất:** Đồng pha với $V_{in}$.
+## 🛡️ Common Collector (CC - Emitter Follower) Amplifiers
+- The output signal is taken from the Emitter terminal.
+- Known as the **Emitter Follower** because the output voltage at the Emitter ($V_e$) closely "follows" the input voltage at the Base ($V_b - 0.7V$).
+- **No Voltage Gain** ($A_v \approx 1$).
+- **Key Characteristic:** Output is in-phase with the input.
 
-### Ứng dụng xuất sắc làm "Mạch Đệm" (Buffer):
-- Trở kháng vào **RẤT CAO** $\Rightarrow$ Không làm suy hao hoặc không hút quá mức tín hiệu dòng điện từ các tầng hay cảm biến đằng trước nó.
-- Trở kháng ra **RẤT THẤP** $\Rightarrow$ Cung cấp được dòng điện "siêu mạnh" giúp điều khiển cho các mạch tải năng lượng lớn (như loa, động cơ công suất).`
+### Excellent Applications as a "Buffer":
+- **VERY HIGH** Input Impedance $\Rightarrow$ Does not load down or attenuate weak source signals or sensors from previous stages.
+- **VERY LOW** Output Impedance $\Rightarrow$ Capable of supplying robust current to drive heavy loads (e.g., speakers, power stages).`
             }
         ]
     }
 ];
 
 async function seedInitialData() {
-    console.log('🌱 Đang khởi tạo dữ liệu ban đầu...');
+    console.log('🌱 Initializing initial academic data...');
 
     for (const subject of SEED_SUBJECTS) {
         const { topics, ...subjectData } = subject;
@@ -277,10 +278,10 @@ async function seedInitialData() {
         subjectData.topicCount = topics.length;
 
         try {
-            // 1. Lưu môn học
+            // 1. Save subject
             await db.collection('subjects').doc(subject.id).set(subjectData);
 
-            // 2. Lưu các bài viết vào subcollection 'topics'
+            // 2. Save topics to subcollection
             for (const topic of topics) {
                 const topicData = {
                     title: topic.title,
@@ -290,10 +291,10 @@ async function seedInitialData() {
                 await db.collection('subjects').doc(subject.id)
                         .collection('topics').doc(topic.id).set(topicData);
             }
-            console.log('✅ Đã tạo môn: ' + subject.name);
+            console.log('✅ Created subject: ' + subject.name);
         } catch (error) {
-            console.error('❌ Lỗi khi tạo ' + subject.name + ':', error);
+            console.error('❌ Error creating ' + subject.name + ':', error);
         }
     }
-    showToast('Đã khởi tạo kiến thức môn Vi xử lý!', 'success');
+    showToast('Knowledge database initialized successfully!', 'success');
 }

@@ -1,0 +1,157 @@
+.editor-container {
+  padding: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+  height: calc(100vh - 70px);
+  display: flex;
+  flex-direction: column;
+}
+
+.header-section {
+  margin-bottom: 20px;
+}
+
+.controls-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.styled-select {
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  outline: none;
+  min-width: 300px;
+  cursor: pointer;
+}
+
+.split-pane {
+  display: flex;
+  gap: 20px;
+  flex: 1;
+  min-height: 0;
+}
+
+.pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.pane-header {
+  padding: 12px 20px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pane-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pane-title i {
+  color: var(--primary-color);
+}
+
+.code-editor {
+  flex: 1;
+  margin: 0;
+  padding: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  border: none;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  overflow-y: auto;
+  resize: none;
+  outline: none;
+}
+
+.editable {
+  color: #a8b2d1;
+  background: #0d1117;
+}
+
+.editable:focus {
+  background: #161b22;
+}
+
+.pane-footer {
+  padding: 15px 20px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Syntax Highlighting for C++ */
+.kw { color: #ff7b72; font-weight: bold; } /* Keyword */
+.str { color: #a5d6ff; } /* String */
+.num { color: #79c0ff; } /* Number */
+.op { color: #c9d1d9; } /* Operator */
+.func { color: #d2a8ff; } /* Function */
+
+/* Solution Overlay */
+.solution-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #0d1117;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+}
+
+.solution-overlay.hidden {
+  display: none;
+}
+
+.solution-header {
+  padding: 12px 20px;
+  background: rgba(35, 134, 54, 0.2);
+  border-bottom: 1px solid rgba(35, 134, 54, 0.4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.solution-badge {
+  color: #3fb950;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: #8b949e;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.close-btn:hover {
+  color: #f85149;
+}
+
+.solution-view {
+  color: #e6edf3;
+}

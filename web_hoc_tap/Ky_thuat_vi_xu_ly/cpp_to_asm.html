@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C/C++ to Assembly Practice | HUST Self Study</title>
+  <link rel="icon" href="../logo.png" type="image/png">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="cpp_to_asm.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- ===== SIDEBAR ===== -->
+  <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+          <div class="logo">
+              <i class="fas fa-graduation-cap"></i>
+              <span>StudyPortal</span>
+          </div>
+          <button id="sidebar-toggle" class="sidebar-toggle">
+              <i class="fas fa-chevron-left"></i>
+          </button>
+      </div>
+      <nav class="sidebar-nav">
+          <a href="../index.html" class="nav-item">
+              <i class="fas fa-home"></i><span>Home</span>
+          </a>
+          <a href="index.html" class="nav-item">
+              <i class="fas fa-file-signature"></i><span>Quiz Prep</span>
+          </a>
+          <a href="cpp_to_asm.html" class="nav-item active">
+              <i class="fas fa-code"></i><span>C++ to Assembly</span>
+          </a>
+      </nav>
+  </aside>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main id="main-content" class="main-content">
+      <header class="topbar">
+          <button id="mobile-menu-btn" class="mobile-menu-btn" style="display: none;">
+              <i class="fas fa-bars"></i>
+          </button>
+          <div class="search-box">
+              <i class="fas fa-microchip"></i>
+              <span style="font-weight: 600; font-size: 15px; margin-left: 30px;">Mastering Assembly Programming Skills</span>
+          </div>
+      </header>
+
+      <div class="editor-container">
+          <div class="header-section">
+              <h1 class="landing-title"><span class="title-line-1">Compile</span><span class="title-line-2">C/C++ to Assembly</span></h1>
+              <p class="landing-sub">Practice translation logic, memory layouts, and register management</p>
+          </div>
+
+          <div class="controls-row">
+              <select id="exerciseSelect" class="styled-select">
+                  <!-- JS will populate this -->
+              </select>
+              <button id="nextBtn" class="btn-primary"><i class="fas fa-forward"></i> Next Exercise</button>
+          </div>
+
+          <div class="split-pane">
+              <!-- Left side: C++ Code -->
+              <div class="pane code-pane">
+                  <div class="pane-header">
+                      <span class="pane-title"><i class="fab fa-cuttlefish"></i> C/C++ Source Code</span>
+                  </div>
+                  <pre id="cppCode" class="code-editor readonly"></pre>
+                  <div class="pane-footer" id="exerciseDesc">
+                      Write the corresponding Assembly (8086) code for the above C++ implementation.
+                  </div>
+              </div>
+
+              <!-- Right side: Assembly Editor -->
+              <div class="pane asm-pane">
+                  <div class="pane-header">
+                      <span class="pane-title"><i class="fas fa-microchip"></i> Assembly Workspace</span>
+                      <button id="showSolutionBtn" class="btn-ghost btn-sm"><i class="fas fa-lightbulb"></i> View Standard Solution</button>
+                  </div>
+                  <textarea id="asmEditor" class="code-editor editable" spellcheck="false" placeholder="; Write your Assembly code here..."></textarea>
+                  
+                  <!-- Solution Overlay -->
+                  <div id="solutionOverlay" class="solution-overlay hidden">
+                      <div class="solution-header">
+                          <span class="solution-badge">Standard Reference Solution</span>
+                          <button id="hideSolutionBtn" class="close-btn"><i class="fas fa-times"></i></button>
+                      </div>
+                      <pre id="solutionCode" class="code-editor solution-view"></pre>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </main>
+
+  <script src="cpp_to_asm.js"></script>
+</body>
+</html>

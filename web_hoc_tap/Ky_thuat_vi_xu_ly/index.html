@@ -1,116 +1,205 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trắc nghiệm Vi Xử Lý 8086 | HUST Self Study</title>
-  <meta name="description" content="Ứng dụng ôn tập trắc nghiệm Kỹ thuật Vi xử lý Intel 8086 - Đại học Bách khoa Hà Nội">
+  <title>Microprocessors 8086 Quiz | HUST Self Study</title>
+  <meta name="description" content="Intel 8086 Microprocessor Quiz - Hanoi University of Science and Technology">
   <link rel="icon" href="../logo.png" type="image/png">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../style.css"> <!-- Main portal CSS for layout -->
+  <link rel="stylesheet" href="style.css">   <!-- Quiz specific CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- Subtle animated background -->
-  <div class="bg-grid"></div>
-  <div class="bg-glow bg-glow-1"></div>
-  <div class="bg-glow bg-glow-2"></div>
-  <div class="bg-glow bg-glow-3"></div>
+  <!-- ===== SIDEBAR ===== -->
+  <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+          <div class="logo">
+              <i class="fas fa-graduation-cap"></i>
+              <span>StudyPortal</span>
+          </div>
+          <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle sidebar">
+              <i class="fas fa-chevron-left"></i>
+          </button>
+      </div>
+      <nav class="sidebar-nav">
+          <a href="../index.html" class="nav-item">
+              <i class="fas fa-home"></i>
+              <span>Home</span>
+          </a>
+          <a href="../index.html" class="nav-item">
+              <i class="fas fa-book"></i>
+              <span>Subjects</span>
+          </a>
+          <a href="../index.html" class="nav-item">
+              <i class="fas fa-file-signature"></i>
+              <span>Quiz Prep</span>
+          </a>
+          <a href="cpp_to_asm.html" class="nav-item">
+              <i class="fas fa-code"></i>
+              <span>C++ to Assembly</span>
+          </a>
+      </nav>
+  </aside>
 
-  <!-- Tooltip element -->
-  <div id="hintTooltip" class="hint-tooltip">
-    <div class="hint-tooltip-title" id="hintTitle"></div>
-    <div class="hint-tooltip-body" id="hintBody"></div>
-  </div>
+  <!-- ===== MAIN CONTENT ===== -->
+  <main id="main-content" class="main-content" style="background: var(--bg-secondary); min-height: 100vh;">
+      
+      <!-- Top bar -->
+      <header class="topbar">
+          <button id="mobile-menu-btn" class="mobile-menu-btn" style="display: none;">
+              <i class="fas fa-bars"></i>
+          </button>
+          <div class="search-box">
+              <i class="fas fa-microchip"></i>
+              <span style="font-weight: 600; font-size: 15px; margin-left: 30px; color: var(--text-primary);">Intel 8086 Microprocessors</span>
+          </div>
+          <div class="topbar-actions">
+              <a href="../index.html" class="btn btn-ghost" style="padding: 8px 16px; font-size: 13px;"><i class="fas fa-arrow-left"></i> Back to Portal</a>
+          </div>
+      </header>
+
+      <!-- Tooltip element -->
+      <div id="hintTooltip" class="hint-tooltip">
+        <div class="hint-tooltip-title" id="hintTitle"></div>
+        <div class="hint-tooltip-body" id="hintBody"></div>
+      </div>
+
+      <!-- Wrapper for quiz content -->
+      <div style="position: relative; overflow: hidden; padding-top: 20px;">
+          <!-- Subtle animated background -->
+          <div class="bg-grid"></div>
+          <div class="bg-glow bg-glow-1"></div>
+          <div class="bg-glow bg-glow-2"></div>
+          <div class="bg-glow bg-glow-3"></div>
+
 
   <!-- ===== LANDING ===== -->
   <div id="landing" class="screen active">
     <div class="landing-container">
       <div class="landing-header">
-        <div class="landing-badge"><span class="badge-dot"></span>HUST — Kỹ thuật Vi xử lý</div>
+        <div class="landing-badge"><span class="badge-dot"></span>HUST — Microprocessors</div>
         <h1 class="landing-title">
-          <span class="title-line-1">Quiz Ôn Tập</span>
-          <span class="title-line-2">Vi Xử Lý 8086</span>
+          <span class="title-line-1">Exam Prep</span>
+          <span class="title-line-2">8086 Microprocessor</span>
         </h1>
-        <p class="landing-sub">Luyện thi giữa kỳ • 150+ câu hỏi • Giải thích chi tiết • Gợi ý thông minh</p>
+        <p class="landing-sub">Midterm Prep • 150+ Questions • Detailed Explanations • Smart Hints</p>
       </div>
 
       <!-- Exam Set Selector -->
-      <div class="section-label">📋 Chọn bộ đề</div>
+      <div class="section-label">📋 Select Exam Set</div>
       <div class="set-grid" id="setGrid">
         <div class="set-card selected" data-set="all">
           <div class="set-icon">📚</div>
           <div class="set-info">
-            <div class="set-name">Tất cả câu hỏi</div>
-            <div class="set-desc">Trộn ngẫu nhiên mọi bộ đề</div>
+            <div class="set-name">All Questions</div>
+            <div class="set-desc">Randomly mix all exam sets</div>
           </div>
           <div class="set-count" id="countAll"></div>
         </div>
         <div class="set-card" data-set="exam2023">
           <div class="set-icon">📝</div>
           <div class="set-info">
-            <div class="set-name">Đề thi 2023.2</div>
-            <div class="set-desc">Đề chính thức giữa kỳ 19/04/2024</div>
+            <div class="set-name">Exam 2023.2</div>
+            <div class="set-desc">Official Midterm 19/04/2024</div>
           </div>
           <div class="set-count" id="countExam"></div>
         </div>
         <div class="set-card" data-set="practice">
           <div class="set-icon">🎯</div>
           <div class="set-info">
-            <div class="set-name">Đề luyện tập</div>
-            <div class="set-desc">Độ khó tương đương đề thi</div>
+            <div class="set-name">Practice Set</div>
+            <div class="set-desc">Standard exam-level difficulty</div>
           </div>
           <div class="set-count" id="countPractice"></div>
         </div>
         <div class="set-card" data-set="advanced">
           <div class="set-icon">🔥</div>
           <div class="set-info">
-            <div class="set-name">Đề nâng cao</div>
-            <div class="set-desc">Nhiều bẫy, trace phức tạp</div>
+            <div class="set-name">Advanced Set</div>
+            <div class="set-desc">Tricky questions, complex tracing</div>
           </div>
           <div class="set-count" id="countAdvanced"></div>
         </div>
         <div class="set-card" data-set="extra">
           <div class="set-icon">💎</div>
           <div class="set-info">
-            <div class="set-name">Bổ sung chuyên sâu</div>
-            <div class="set-desc">Mở rộng kiến thức</div>
+            <div class="set-name">In-depth Specialization</div>
+            <div class="set-desc">Extended knowledge concepts</div>
           </div>
           <div class="set-count" id="countExtra"></div>
+        </div>
+        <!-- BỔ SUNG CÁC ĐỀ MỚI -->
+        <div class="set-card" data-set="exam_prep_all">
+          <div class="set-icon">📚</div>
+          <div class="set-info">
+            <div class="set-name">Exam Syllabus (Full)</div>
+            <div class="set-desc">Full set of 170+ syllabus questions</div>
+          </div>
+          <div class="set-count" id="countPrepAll"></div>
+        </div>
+        <div class="set-card" data-set="midterm1">
+          <div class="set-icon">📜</div>
+          <div class="set-info">
+            <div class="set-name">Mock Exam #1</div>
+            <div class="set-desc">Foundation concepts review</div>
+          </div>
+          <div class="set-count" id="countMidterm1"></div>
+        </div>
+        <div class="set-card" data-set="midterm2">
+          <div class="set-icon">⏱️</div>
+          <div class="set-info">
+            <div class="set-name">Mock Exam #2</div>
+            <div class="set-desc">Code tracing practice</div>
+          </div>
+          <div class="set-count" id="countMidterm2"></div>
+        </div>
+        <div class="set-card" data-set="midterm3">
+          <div class="set-icon">🏆</div>
+          <div class="set-info">
+            <div class="set-name">Mock Exam #3</div>
+            <div class="set-desc">Comprehensive evaluation</div>
+          </div>
+          <div class="set-count" id="countMidterm3"></div>
         </div>
       </div>
 
       <!-- Topic Filter -->
-      <div class="section-label">🏷️ Lọc theo chủ đề <span class="section-hint">(tuỳ chọn)</span></div>
+      <div class="section-label">🏷️ Filter by Subject Topic <span class="section-hint">(optional)</span></div>
       <div class="topic-chips" id="topicChips">
-        <button class="chip active" data-topic="all">Tất cả</button>
-        <button class="chip" data-topic="number">🔢 Hệ đếm</button>
-        <button class="chip" data-topic="register">📦 Thanh ghi</button>
-        <button class="chip" data-topic="addressing">📍 Địa chỉ</button>
+        <button class="chip active" data-topic="all">All</button>
+        <button class="chip" data-topic="number">🔢 Number Systems</button>
+        <button class="chip" data-topic="register">📦 Registers</button>
+        <button class="chip" data-topic="addressing">📍 Addressing</button>
         <button class="chip" data-topic="stack">📥 Stack</button>
-        <button class="chip" data-topic="flags">🚩 Cờ</button>
-        <button class="chip" data-topic="trace">🔍 Trace code</button>
-        <button class="chip" data-topic="arch">🏗️ Kiến trúc</button>
-        <button class="chip" data-topic="instruction">⚙️ Tập lệnh</button>
+        <button class="chip" data-topic="flags">🚩 Flags</button>
+        <button class="chip" data-topic="trace">🔍 Code Tracing</button>
+        <button class="chip" data-topic="arch">🏗️ Architecture</button>
+        <button class="chip" data-topic="instruction">⚙️ Instruction Set</button>
+        <button class="chip" data-topic="Chapter 1">📘 Chapter 1</button>
+        <button class="chip" data-topic="Chapter 2">🔢 Chapter 2</button>
+        <button class="chip" data-topic="Chapter 3">🛠️ Chapter 3</button>
+        <button class="chip" data-topic="Chapter 4">💻 Chapter 4</button>
       </div>
 
       <!-- Mode -->
       <div class="mode-row">
         <button class="mode-btn active" data-mode="practice">
           <span class="mode-icon">🎯</span>
-          <span>Luyện tập</span>
-          <span class="mode-desc">Xem giải thích ngay</span>
+          <span>Practice Mode</span>
+          <span class="mode-desc">Instant explanations</span>
         </button>
         <button class="mode-btn" data-mode="exam">
           <span class="mode-icon">📝</span>
-          <span>Thi thử</span>
-          <span class="mode-desc">45 phút • 30 câu</span>
+          <span>Exam Mode</span>
+          <span class="mode-desc">45 Mins • 30 Questions</span>
         </button>
       </div>
 
-      <div class="ready-info" id="readyInfo">Sẵn sàng: <strong>0 câu</strong></div>
+      <div class="ready-info" id="readyInfo">Ready: <strong>0 questions</strong></div>
       <button id="startBtn" class="start-btn">
-        <span>Bắt đầu</span>
+        <span>Start</span>
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h12M12 4l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>
@@ -120,11 +209,11 @@
   <div id="quiz" class="screen">
     <header class="quiz-topbar">
       <div class="topbar-left">
-        <button id="backBtn" class="tb-btn" title="Thoát">
+        <button id="backBtn" class="tb-btn" title="Quit">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 14L6 9l5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <span class="tb-counter" id="questionCounter">1/30</span>
-        <span class="tb-tag" id="topicLabel">Tất cả</span>
+        <span class="tb-tag" id="topicLabel">All</span>
       </div>
       <div class="topbar-right">
         <div id="timerBox" class="tb-timer hidden">
@@ -133,7 +222,7 @@
         </div>
         <div class="tb-score">
           <span id="scoreDisplay">0</span>
-          <span class="tb-score-label">điểm</span>
+          <span class="tb-score-label">points</span>
         </div>
       </div>
     </header>
@@ -142,20 +231,20 @@
 
     <main class="quiz-main">
       <div id="questionCard" class="q-card">
-        <div class="q-badge" id="qNumber">Câu 1</div>
+        <div class="q-badge" id="qNumber">Question 1</div>
         <div class="q-text" id="qText"></div>
         <pre class="q-code hidden" id="qCode"></pre>
         <div class="q-options" id="optionsContainer"></div>
       </div>
 
       <div id="explanation" class="expl hidden">
-        <div class="expl-head"><span id="explIcon">💡</span><span id="explTitle">Giải thích</span></div>
+        <div class="expl-head"><span id="explIcon">💡</span><span id="explTitle">Explanation</span></div>
         <div id="explText" class="expl-body"></div>
       </div>
 
       <div class="q-actions">
         <button id="nextBtn" class="next-btn hidden">
-          <span id="nextBtnText">Câu tiếp theo</span>
+          <span id="nextBtnText">Next Question</span>
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 9h10M10 4l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
@@ -166,7 +255,7 @@
   <div id="result" class="screen">
     <div class="result-wrap">
       <div id="resultEmoji" class="result-emoji">🏆</div>
-      <h2 id="resultTitle" class="result-title">Xuất sắc!</h2>
+      <h2 id="resultTitle" class="result-title">Excellent!</h2>
 
       <div class="score-ring">
         <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="ring-bg"/><circle cx="60" cy="60" r="52" class="ring-fill" id="scoreCircle"/></svg>
@@ -174,20 +263,23 @@
       </div>
 
       <div class="stats-row">
-        <div class="stat green"><div class="stat-val" id="correctCount">0</div><div class="stat-lbl">Đúng ✅</div></div>
-        <div class="stat red"><div class="stat-val" id="wrongCount">0</div><div class="stat-lbl">Sai ❌</div></div>
-        <div class="stat yellow"><div class="stat-val" id="timeSpent">0:00</div><div class="stat-lbl">Thời gian ⏱️</div></div>
-        <div class="stat blue"><div class="stat-val" id="pctDisplay">0%</div><div class="stat-lbl">Tỷ lệ 📊</div></div>
+        <div class="stat green"><div class="stat-val" id="correctCount">0</div><div class="stat-lbl">Correct ✅</div></div>
+        <div class="stat red"><div class="stat-val" id="wrongCount">0</div><div class="stat-lbl">Wrong ❌</div></div>
+        <div class="stat yellow"><div class="stat-val" id="timeSpent">0:00</div><div class="stat-lbl">Time ⏱️</div></div>
+        <div class="stat blue"><div class="stat-val" id="pctDisplay">0%</div><div class="stat-lbl">Accuracy 📊</div></div>
       </div>
 
       <div id="reviewSection" class="reviews"></div>
 
       <div class="result-btns">
-        <button id="retryBtn" class="btn-primary">🔄 Làm lại</button>
-        <button id="homeBtn" class="btn-ghost">🏠 Trang chủ</button>
+        <button id="retryBtn" class="btn-primary">🔄 Retry</button>
+        <button id="homeBtn" class="btn-ghost">🏠 Home</button>
       </div>
-    </div>
-  </div>
+    </div> <!-- end .result-wrap -->
+  </div> <!-- end #result -->
+
+  </div> <!-- End Wrapper -->
+  </main> <!-- End Main Content -->
 
   <script src="hints.js"></script>
   <script src="questions.js"></script>

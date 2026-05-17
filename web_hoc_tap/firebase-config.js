@@ -16,3 +16,6 @@ const db = firebase.firestore();
 // Firestore collections reference
 const subjectsRef = db.collection('subjects');
 const notesRef = db.collection('notes');
+const examKeysRef = db.collection('examKeys');
+const keyRequestsRef = db.collection('keyRequests');
+const userKeyAccessRef = db.collection('userKeyAccess');
