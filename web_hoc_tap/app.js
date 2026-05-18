@@ -1126,14 +1126,15 @@ function _renderExamPreviewModal(exam) {
 
     // Footer
     const isOwner = AUTH.isAuth() && AUTH.getUser().uid === exam.authorUid;
+    const canDelete = isOwner || AUTH.isAdmin();
     document.getElementById('ep-footer').innerHTML = `
         <div class="ep-price-tag">
             ${isFree
                 ? `<i class="fas fa-gift" style="color:#10b981"></i> Miễn phí`
                 : `<i class="fas fa-coins" style="color:#f59e0b"></i> ${exam.price} Điểm`}
         </div>
-        ${isOwner ? `<button class="btn btn-secondary" onclick="deletePublicExam('${exam.id}', this); closeExamPreview();" style="color:#ef4444;border-color:#ef4444">
-            <i class="fas fa-trash-alt"></i> Xóa bài đăng
+        ${canDelete ? `<button class="btn btn-secondary" onclick="deletePublicExam('${exam.id}', this); closeExamPreview();" style="color:#ef4444;border-color:#ef4444" title="${isOwner ? 'Xóa bài đăng của bạn' : 'Xóa bài đăng này (Admin)'}">
+            <i class="fas fa-trash-alt"></i> ${isOwner ? 'Xóa bài đăng' : 'Xóa bài đăng (Admin)'}
         </button>` : ''}
         <button class="btn btn-secondary" onclick="closeExamPreview()">
             <i class="fas fa-times"></i> Đóng
@@ -1151,7 +1152,7 @@ window.closeExamPreview = function() {
     document.getElementById('modal-exam-preview').classList.remove('visible');
 };
 
-// Xóa bài đăng công khai (chỉ chủ sở hữu)
+// Xóa bài đăng công khai (chủ sở hữu hoặc admin)
 window.deletePublicExam = async function(examId, btnElement) {
     if (!AUTH.isAuth()) return;
     if (!confirm('Bạn có chắc muốn xóa bài đăng này khỏi kho đề công khai? Hành động này không thể hoàn tác.')) return;
@@ -1160,7 +1161,7 @@ window.deletePublicExam = async function(examId, btnElement) {
     try {
         const doc = await db.collection('public_exams').doc(examId).get();
         if (!doc.exists) { showToast('Không tìm thấy bài đăng!', 'error'); return; }
-        if (doc.data().authorUid !== user.uid) {
+        if (doc.data().authorUid !== user.uid && !AUTH.isAdmin()) {
             showToast('Bạn không có quyền xóa bài đăng này!', 'error');
             return;
         }
@@ -1180,13 +1181,17 @@ window.deletePublicExam = async function(examId, btnElement) {
     }
 };
 
-// Hiển thị nút xóa cho bài đăng của chính user sau khi render
+// Hiển thị nút xóa cho bài đăng của chính user hoặc Admin sau khi render
 function showOwnerDeleteButtons() {
     if (!AUTH.isAuth()) return;
     const uid = AUTH.getUser().uid;
+    const isAdmin = AUTH.isAdmin();
     document.querySelectorAll('.public-exam-delete-btn').forEach(btn => {
-        if (btn.dataset.author === uid) {
+        if (btn.dataset.author === uid || isAdmin) {
             btn.style.display = 'inline-flex';
+            if (btn.dataset.author !== uid && isAdmin) {
+                btn.title = "Xóa bài đăng này (Admin)";
+            }
         }
     });
 }
@@ -2454,8 +2459,13 @@ async function runAIEnginePipeline() {
     try {
         generatedQuestions = await callDeepSeekForQuestions(null, sourceText, subject);
     } catch (err) {
-        console.error('AI generation failed, falling back to HUST seed database:', err);
-        generatedQuestions = MOCK_QUESTION_DATA[subject];
+        console.error('AI generation failed:', err);
+        // KHÔNG fallback sang mock data — báo lỗi rõ ràng để user biết
+        setStepState('generate', 'error', 'Tạo đề thất bại');
+        showToast('Lỗi tạo đề: ' + err.message + '. Vui lòng thử lại!', 'error');
+        btnGenerate.disabled = false;
+        btnGenerate.innerHTML = `<i class="fas fa-magic"></i> Tạo Lại Đề Thi Với AI`;
+        return;
     }
 
     setStepState('generate', 'success', `Đã tạo ${generatedQuestions.length} câu hỏi`);
