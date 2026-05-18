@@ -3560,6 +3560,15 @@ async function handleUploadResource() {
 
         const cloudName = 'dyjgtjc4l';
         const uploadPreset = 'studyportal_unsigned';
+        
+        // Tự động phân loại tài nguyên dựa trên đuôi file để tối ưu bảo mật & hiển thị của Cloudinary
+        const ext = file.name.split('.').pop().toLowerCase();
+        let resourceType = 'auto';
+        if (['pdf', 'docx', 'doc', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'rar', 'txt'].includes(ext)) {
+            resourceType = 'raw';
+        } else if (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext)) {
+            resourceType = 'image';
+        }
 
         const formData = new FormData();
         formData.append('file', file);
@@ -3568,7 +3577,7 @@ async function handleUploadResource() {
 
         const downloadURL = await new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`);
+            xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`);
 
             xhr.upload.onprogress = (e) => {
                 if (e.lengthComputable && progressBar) {
