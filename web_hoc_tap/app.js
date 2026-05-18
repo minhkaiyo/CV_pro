@@ -722,25 +722,105 @@ function renderSubjects() {
 // Category filter state
 AppState.categoryFilter = 'all';
 
+// Build dynamic category cards from actual exam subjects in DB
+function _buildDynamicCategories(exams) {
+    const track = document.getElementById('category-track');
+    if (!track) return;
+
+    // Collect unique subjects from exams only (not documents)
+    const subjectSet = new Set();
+    exams.forEach(e => {
+        const rType = e.resourceType || 'exam';
+        if (rType === 'exam' && e.subject) {
+            subjectSet.add(e.subject.trim());
+        }
+    });
+
+    if (subjectSet.size === 0) return;
+
+    // Icon map for common subjects
+    const iconMap = [
+        { keywords: ['marketing'],              icon: 'fa-bullhorn',           color: '#e11d48' },
+        { keywords: ['thương mại', 'tmdt', 'ecommerce'], icon: 'fa-shopping-cart', color: '#16a34a' },
+        { keywords: ['công nghệ', 'cntt', 'it', 'lập trình', 'software'], icon: 'fa-laptop-code', color: '#0284c7' },
+        { keywords: ['y học', 'y tế', 'dược', 'medical'], icon: 'fa-mortar-pestle', color: '#059669' },
+        { keywords: ['luật', 'pháp'],           icon: 'fa-balance-scale',      color: '#b91c1c' },
+        { keywords: ['tiếng anh', 'english', 'ngôn ngữ'], icon: 'fa-language', color: '#7c3aed' },
+        { keywords: ['ô tô', 'cơ khí', 'automotive'], icon: 'fa-car',         color: '#ea580c' },
+        { keywords: ['dsp', 'signal', 'tín hiệu'], icon: 'fa-wave-square',    color: '#8b5cf6' },
+        { keywords: ['vi xử lý', 'microprocessor', '8086'], icon: 'fa-microchip', color: '#0891b2' },
+        { keywords: ['toán', 'math'],           icon: 'fa-square-root-variable', color: '#d97706' },
+        { keywords: ['vật lý', 'physics'],      icon: 'fa-atom',               color: '#0284c7' },
+        { keywords: ['hóa', 'chemistry'],       icon: 'fa-flask',              color: '#16a34a' },
+        { keywords: ['kinh tế', 'economics'],   icon: 'fa-chart-line',         color: '#0891b2' },
+        { keywords: ['điện', 'electric'],       icon: 'fa-bolt',               color: '#eab308' },
+    ];
+
+    function getIconForSubject(subj) {
+        const lower = subj.toLowerCase();
+        for (const m of iconMap) {
+            if (m.keywords.some(k => lower.includes(k))) {
+                return { icon: m.icon, color: m.color };
+            }
+        }
+        return { icon: 'fa-book', color: '#6b7280' };
+    }
+
+    const currentFilter = AppState.categoryFilter || 'all';
+
+    // Build HTML — "Tất cả" card first, then dynamic subjects
+    let html = `
+        <div class="category-card ${currentFilter === 'all' ? 'active' : ''}" data-cat="all"
+             onclick="filterByCategory('all', this)">
+            <div class="cat-icon"><i class="fas fa-border-all" style="color:#6b7280"></i></div>
+            <span class="cat-name">Tất cả</span>
+        </div>`;
+
+    [...subjectSet].sort().forEach(subj => {
+        const { icon, color } = getIconForSubject(subj);
+        const isActive = currentFilter === subj;
+        const shortName = subj.length > 18 ? subj.substring(0, 16) + '…' : subj;
+        html += `
+        <div class="category-card ${isActive ? 'active' : ''}" data-cat="${subj}"
+             onclick="filterByCategory('${subj.replace(/'/g, "\\'")}', this)"
+             title="${subj}">
+            <div class="cat-icon"><i class="fas ${icon}" style="color:${color}"></i></div>
+            <span class="cat-name">${shortName}</span>
+        </div>`;
+    });
+
+    track.innerHTML = html;
+}
 function filterByCategory(category, cardEl) {
+    // Toggle: click lai category dang active -> reset ve all
+    if (AppState.categoryFilter === category && category !== 'all') {
+        category = 'all';
+        cardEl = null;
+    }
+
     AppState.categoryFilter = category;
 
-    // Update active state tr�n cards
+    // Update active state
     document.querySelectorAll('#category-track .category-card').forEach(c => c.classList.remove('active'));
-    if (cardEl) cardEl.classList.add('active');
+    if (cardEl) {
+        cardEl.classList.add('active');
+    } else {
+        const allCard = document.querySelector('#category-track .category-card[data-cat="all"]');
+        if (allCard) allCard.classList.add('active');
+    }
 
-    // C?p nh?t badge
+    // Cap nhat badge
     const badge = document.getElementById('category-active-badge');
     if (badge) {
         if (category === 'all') {
             badge.style.display = 'none';
         } else {
             badge.style.display = 'inline-flex';
-            badge.innerHTML = `<i class="fas fa-tag" style="margin-right:5px"></i>${category} <button onclick="filterByCategory('all',null)" style="background:none;border:none;cursor:pointer;margin-left:6px;color:inherit;font-size:12px;padding:0">?</button>`;
+            badge.innerHTML = '<i class="fas fa-tag" style="margin-right:5px"></i>' + category +
+                ' <button onclick="filterByCategory(\'all\',null)" style="background:none;border:none;cursor:pointer;margin-left:6px;color:inherit;font-size:12px;padding:0">\u2715</button>';
         }
     }
 
-    // Scroll grid v�o view
     const grid = document.getElementById('subjects-grid');
     if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
@@ -762,6 +842,7 @@ async function renderPublicExams() {
         const snap = await query.orderBy('createdAt', 'desc').limit(50).get();
         
         let exams = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const allExams = exams; // keep full list for category building
 
         // Only show EXAMS here
         exams = exams.filter(e => {
@@ -780,13 +861,14 @@ async function renderPublicExams() {
             exams = exams.filter(e => e.difficulty === diffFilter);
         }
 
-        // Apply category filter
+        // Apply category filter — exact match hoac partial
         const catFilter = AppState.categoryFilter || 'all';
         if (catFilter !== 'all') {
             exams = exams.filter(e => {
-                const subj = (e.subject || '').toLowerCase();
-                const cat = catFilter.toLowerCase();
-                return subj.includes(cat) || cat.includes(subj.split(' ')[0]);
+                const subj = (e.subject || '').toLowerCase().trim();
+                const cat = catFilter.toLowerCase().trim();
+                // Exact match truoc, sau do partial
+                return subj === cat || subj.includes(cat) || cat.includes(subj);
             });
         }
 
@@ -917,10 +999,10 @@ function createPublicExamCard(exam) {
                     </button>
                 </div>
             </div>
-            
             <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary); line-height: 1.4;">${escapeHTML(exam.title)}</h3>
-            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; display:flex; align-items:center; gap:6px;">
-                <i class="fas fa-book"></i> Môn: <span style="font-weight:600; color:var(--text-secondary);">${escapeHTML(exam.subject)}</span>
+            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+                <span><i class="fas fa-book"></i> Môn: <span style="font-weight:600; color:var(--text-secondary);">${escapeHTML(exam.subject)}</span></span>
+                <span><i class="far fa-clock"></i> ${formatDateTime(exam.createdAt)}</span>
             </div>
             
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top: auto; padding-top: 12px; border-top: 1px dashed var(--border-color); font-size: 12px;">
@@ -1047,7 +1129,7 @@ function _renderExamPreviewModal(exam) {
     document.getElementById('ep-meta').innerHTML = `
         <span><i class="fas fa-book" style="color:${typeInfo.color}"></i> ${escapeHTML(exam.subject || '')}</span>
         <span><i class="fas fa-user-edit"></i> ${escapeHTML((exam.authorEmail || '').split('@')[0])}</span>
-        ${exam.createdAt ? `<span><i class="fas fa-calendar-alt"></i> ${new Date(exam.createdAt?.seconds ? exam.createdAt.seconds*1000 : exam.createdAt).toLocaleDateString('vi-VN')}</span>` : ''}
+        ${exam.createdAt ? `<span><i class="fas fa-calendar-alt"></i> ${formatDateTime(exam.createdAt)}</span>` : ''}
     `;
 
     // Stats bar
@@ -1231,7 +1313,7 @@ function createSubjectCard(subject) {
                     <div class="exam-uploader-avatar">A</div>
                     <div class="exam-uploader-info">
                         <span class="exam-uploader-name">Admin</span>
-                        <span class="exam-uploader-time">${timeAgoStr} •</span>
+                        <span class="exam-uploader-time" title="${formatDateTime(subject.createdAt)}">${timeAgoStr} (${formatDateTime(subject.createdAt)}) •</span>
                     </div>
                 </div>
                 <h3 class="exam-card-title">${escapeHTML(subject.name)}</h3>
@@ -1312,7 +1394,7 @@ async function showSubjectDetail(subjectId) {
             </div>
             <div class="topic-card-info" style="position:relative; z-index:1;">
                 <h4>${escapeHTML(t.title)}</h4>
-                <span>${formatDate(t.createdAt)}</span>
+                <span title="${formatDateTime(t.createdAt)}">${formatDate(t.createdAt)} (${formatDateTime(t.createdAt)})</span>
             </div>
             <i class="fas fa-chevron-right topic-card-arrow" style="position:relative; z-index:1;"></i>
         </div>
@@ -1388,8 +1470,8 @@ function renderNotes() {
             </div>
             <h4>${escapeHTML(n.title)}</h4>
             <p>${escapeHTML(n.content)}</p>
-            <div class="note-date">
-                <i class="fas fa-clock"></i> ${timeAgo(n.createdAt)}
+            <div class="note-date" title="${formatDateTime(n.createdAt)}">
+                <i class="fas fa-clock"></i> ${timeAgo(n.createdAt)} (${formatDateTime(n.createdAt)})
                 ${n.userEmail ? `<span style="margin-left:auto;opacity:0.6;font-size:10px">${escapeHTML(n.userEmail.split('@')[0])}</span>` : ''}
             </div>
         </div>`;
@@ -1698,6 +1780,30 @@ function renderMarkdown(text) {
 }
 
 // ===== UTILITIES =====
+function formatDateTime(dateInput) {
+    if (!dateInput) return '';
+    try {
+        let date;
+        if (dateInput.seconds) { // Firestore Timestamp
+            date = new Date(dateInput.seconds * 1000);
+        } else {
+            date = new Date(dateInput);
+        }
+        
+        if (isNaN(date.getTime())) return '';
+        
+        const hrs = String(date.getHours()).padStart(2, '0');
+        const mins = String(date.getMinutes()).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        
+        return `${hrs}:${mins} ${day}/${month}/${year}`;
+    } catch (e) {
+        return '';
+    }
+}
+
 function escapeHTML(str) {
     const div = document.createElement('div');
     div.textContent = str;
