@@ -5683,3 +5683,10 @@ select:focus {
 
 @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
 
+
+.marketplace-hero, .upgrade-hero { position: relative; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 32px 40px 28px; text-align: center; margin-bottom: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.06); }
+.marketplace-hero::before { content: ''; position: absolute; width: 320px; height: 320px; border-radius: 50%; top: -140px; left: -100px; background: radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%); pointer-events: none; }
+.marketplace-hero::after { content: ''; position: absolute; width: 320px; height: 320px; border-radius: 50%; bottom: -140px; right: -100px; background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%); pointer-events: none; }
+.upgrade-hero::before { content: ''; position: absolute; width: 320px; height: 320px; border-radius: 50%; top: -140px; left: -100px; background: radial-gradient(circle, rgba(236,72,153,0.1) 0%, transparent 70%); pointer-events: none; }
+.upgrade-hero::after { content: ''; position: absolute; width: 320px; height: 320px; border-radius: 50%; bottom: -140px; right: -100px; background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%); pointer-events: none; }
+
