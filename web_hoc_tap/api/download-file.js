@@ -27,11 +27,21 @@ export default async function handler(req, res) {
         }
 
         // Cloudinary URL — redirect trực tiếp (không cần proxy)
-        // URL Cloudinary đã public, fetch qua proxy gây lỗi CORS không cần thiết
         if (decodedUrl.includes('res.cloudinary.com')) {
+            // Loại bỏ dấu tiếng Việt, ký tự đặc biệt và khoảng trắng để tránh lỗi 400 Bad Request từ Cloudinary
+            const rawFileName = fileName.replace(/\.[^.]+$/, '');
+            const safeFileName = rawFileName
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '') // Bỏ dấu
+                .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+                .replace(/\s+/g, '_') // Thay khoảng trắng bằng dấu gạch dưới
+                .replace(/[^a-zA-Z0-9\-_]/g, ''); // Bỏ mọi ký tự lạ khác
+            
+            const finalFileName = safeFileName || 'document';
+
             // Thêm fl_attachment để Cloudinary tự trả header Content-Disposition
             const dlUrl = decodedUrl.includes('/upload/')
-                ? decodedUrl.replace('/upload/', `/upload/fl_attachment:${encodeURIComponent(fileName.replace(/\.[^.]+$/, ''))}/`)
+                ? decodedUrl.replace('/upload/', `/upload/fl_attachment:${finalFileName}/`)
                 : decodedUrl;
             return res.redirect(302, dlUrl);
         }
