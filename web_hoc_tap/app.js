@@ -1,4 +1,4 @@
-﻿/* ============================================
+/* ============================================
    STUDY PLATFORM - Main Application Logic
    Firebase Firestore Integration
    ============================================ */
@@ -2553,88 +2553,96 @@ function renderAIPreviewWorkspace() {
     const container = document.getElementById('ai-preview-workspace');
     if (!container || !currentAIExtractedExam) return;
 
-    document.getElementById('ai-preview-title').textContent = currentAIExtractedExam.title;
-    document.getElementById('ai-preview-subject').textContent = currentAIExtractedExam.subject;
-    document.getElementById('ai-preview-difficulty').textContent = currentAIExtractedExam.difficulty;
-    document.getElementById('ai-preview-score').textContent = currentAIExtractedExam.qualityScore;
+    document.getElementById('ai-preview-title').textContent = currentAIExtractedExam.title || '';
+    document.getElementById('ai-preview-subject').textContent = currentAIExtractedExam.subject || '';
+    document.getElementById('ai-preview-difficulty').textContent = currentAIExtractedExam.difficulty || '';
+    document.getElementById('ai-preview-score').textContent = currentAIExtractedExam.qualityScore || '';
 
     const listEl = document.getElementById('ai-questions-preview-list');
     listEl.innerHTML = '';
 
-    let totalPublishCost = 0;
+    const questions = currentAIExtractedExam.questions;
+    if (!questions || !Array.isArray(questions) || questions.length === 0) {
+        listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)"><i class="fas fa-exclamation-circle" style="font-size:32px;margin-bottom:12px;display:block"></i>Không có câu hỏi nào</div>';
+        container.style.display = 'block';
+        return;
+    }
 
-    currentAIExtractedExam.questions.forEach((q, idx) => {
-        // Tính toán chi phí động: 40 - 60đ / câu dựa trên độ dài (văn bản)
-        const qLength = q.content.length + (q.explanation ? q.explanation.length : 0);
-        let qCost = 40;
-        if (qLength > 200) qCost = 50;
-        if (qLength > 400) qCost = 60;
-        totalPublishCost += qCost;
+    const QTYPE_LABELS = {
+        multiple_choice: 'Trắc nghiệm',
+        true_false: 'Đúng / Sai',
+        multiple_select: 'Nhiều đáp án',
+        fill_blank: 'Điền khuyết',
+        flashcard: 'Flashcard',
+        short_answer: 'Trả lời ngắn'
+    };
+
+    questions.forEach((q, idx) => {
+        // Hỗ trợ cả field 'content' lẫn 'question'
+        const qText = q.content || q.question || '(Không có nội dung)';
+        const qType = q.type || 'multiple_choice';
+        const typeLabel = QTYPE_LABELS[qType] || 'Câu hỏi';
+        const options = Array.isArray(q.options) ? q.options : [];
+        const correctAnswer = q.correct_answer || q.correctAnswer || '';
+        const explanation = q.explanation || '';
 
         const card = document.createElement('div');
         card.className = 'question-preview-card';
         card.id = `q-preview-card-${idx}`;
-        
+
+        // Build options HTML theo loại câu hỏi
         let optionsHTML = '';
-        q.options.forEach((opt, optIdx) => {
-            const letter = opt.substring(0, 1);
-            const isCorrect = letter === q.correct_answer;
-            optionsHTML += `
-                <button class="option-preview-btn ${isCorrect ? 'correct' : ''}" onclick="selectPreviewOption(${idx}, ${optIdx})">
-                    ${escapeHTML(opt)}
-                </button>
-            `;
-        });
+        if (qType === 'multiple_choice' || qType === 'multiple_select') {
+            options.forEach((opt, optIdx) => {
+                const letter = String(opt).substring(0, 1);
+                const isCorrect = correctAnswer.includes(letter);
+                optionsHTML += `<button class="option-preview-btn ${isCorrect ? 'correct' : ''}" onclick="selectPreviewOption(${idx}, ${optIdx})">${escapeHTML(String(opt))}</button>`;
+            });
+        } else if (qType === 'true_false') {
+            const trueCorrect = correctAnswer === 'Đúng' || correctAnswer === 'true' || correctAnswer === 'True';
+            optionsHTML = `
+                <button class="option-preview-btn ${trueCorrect ? 'correct' : ''}"><i class="fas fa-check"></i> Đúng</button>
+                <button class="option-preview-btn ${!trueCorrect ? 'correct' : ''}"><i class="fas fa-times"></i> Sai</button>`;
+        } else if (qType === 'fill_blank') {
+            optionsHTML = `<div style="padding:12px;background:var(--bg-secondary);border-radius:8px;border:1.5px dashed var(--border-color);font-size:13px;color:var(--text-secondary)">
+                <i class="fas fa-pencil"></i> Đáp án: <strong style="color:var(--text-primary)">${escapeHTML(correctAnswer)}</strong>
+            </div>`;
+        } else if (qType === 'flashcard' || qType === 'short_answer') {
+            optionsHTML = `<div style="padding:12px;background:var(--bg-secondary);border-radius:8px;border:1.5px solid var(--border-color);font-size:13px;color:var(--text-secondary)">
+                <i class="fas fa-comment-dots"></i> Đáp án mẫu: <strong style="color:var(--text-primary)">${escapeHTML(correctAnswer)}</strong>
+            </div>`;
+        }
 
         card.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
-                <span class="badge" style="background: var(--blue-100); color: var(--blue-700); font-weight: 700;">Câu hỏi ${idx + 1} • Trắc nghiệm <span style="font-weight: normal; color: var(--text-muted); margin-left: 4px;">(Phí đăng: ${qCost}đ)</span></span>
-                <div class="question-actions" style="display: flex; gap: 8px;">
-                    <button class="btn btn-ghost btn-sm" onclick="editAIQuestion(${idx})" style="padding: 4px 8px; font-size:12px;"><i class="fas fa-edit"></i> Sửa</button>
-                    <button class="btn btn-ghost btn-sm text-danger" onclick="deleteAIQuestion(${idx})" style="padding: 4px 8px; font-size:12px;"><i class="fas fa-trash"></i> Xóa</button>
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--border-color);padding-bottom:10px;margin-bottom:12px;">
+                <span class="badge" style="background:var(--blue-100);color:var(--blue-700);font-weight:700">Câu ${idx + 1} • ${typeLabel}</span>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn btn-ghost btn-sm" onclick="editAIQuestion(${idx})" style="padding:4px 8px;font-size:12px"><i class="fas fa-edit"></i> Sửa</button>
+                    <button class="btn btn-ghost btn-sm text-danger" onclick="deleteAIQuestion(${idx})" style="padding:4px 8px;font-size:12px"><i class="fas fa-trash"></i> Xóa</button>
                 </div>
             </div>
-            <p style="font-size: 15px; font-weight: 700; color: var(--gray-800); line-height: 1.6;">${escapeHTML(q.content)}</p>
-            
-            <div class="question-options-grid">
-                ${optionsHTML}
-            </div>
-
+            <p style="font-size:15px;font-weight:700;color:var(--gray-800);line-height:1.6">${escapeHTML(qText)}</p>
+            <div class="question-options-grid">${optionsHTML}</div>
+            ${explanation ? `
             <button class="explanation-toggle-btn" onclick="toggleAIExplanation(${idx})">
-                <i class="fas fa-lightbulb"></i> Xem giải thích chi tiết <i class="fas fa-chevron-down" id="exp-arrow-${idx}"></i>
+                <i class="fas fa-lightbulb"></i> Xem giải thích <i class="fas fa-chevron-down" id="exp-arrow-${idx}"></i>
             </button>
-            <div class="explanation-box" id="explanation-box-${idx}" style="display: none;">
-                ${escapeHTML(q.explanation)}
-            </div>
+            <div class="explanation-box" id="explanation-box-${idx}" style="display:none">${escapeHTML(explanation)}</div>` : ''}
         `;
         listEl.appendChild(card);
     });
 
-    // Update publish button cost
+    // Update publish button
     const publishBadge = document.getElementById('publish-cost-badge');
     const publishBtn = document.getElementById('btn-ai-publish');
-    
     if (publishBadge && publishBtn) {
-        if (typeof PointsSystem !== 'undefined' && PointsSystem.tier === 'pro') {
-            totalPublishCost = 0;
-            publishBadge.textContent = 'Miễn phí';
-            publishBadge.style.color = '#10b981';
-        } else {
-            publishBadge.textContent = `Phí: ${totalPublishCost.toLocaleString()} Đ`;
-            publishBadge.style.color = ''; // Reset color
-        }
-        
-        // Save cost globally to use in publish function
-        window.currentExamPublishCost = totalPublishCost;
-        
-        // Reset button state if it was published before
-        publishBtn.innerHTML = `<i class="fas fa-cloud-arrow-up"></i> Đăng đề thi <span id="publish-cost-badge" class="publish-cost-badge">${publishBadge.textContent}</span>`;
+        publishBadge.textContent = '';
+        publishBtn.innerHTML = `<i class="fas fa-cloud-arrow-up"></i> Đăng đề thi`;
         publishBtn.disabled = false;
+        window.currentExamPublishCost = 0;
     }
 
     container.style.display = 'block';
-    
-    // Smooth scroll down to preview
     container.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -3245,18 +3253,20 @@ async function handleUploadResource() {
             return;
         }
 
-        // Lấy ID token để xác thực với Vercel API
-        if (progressText) progressText.textContent = 'Đang tải file lên...';
-        const idToken = await firebase.auth().currentUser.getIdToken(true);
+        // Upload trực tiếp lên Cloudinary (bypass Vercel 4.5MB limit)
+        if (progressText) progressText.textContent = 'Đang tải file lên Cloudinary...';
+
+        const cloudName = 'dyjgtjc4l';
+        const uploadPreset = 'studyportal_unsigned';
 
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('upload_preset', uploadPreset);
+        formData.append('folder', `marketplace/${user.uid}`);
 
-        // Upload qua Vercel API (bypass CORS)
         const downloadURL = await new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', '/api/upload-resource');
-            xhr.setRequestHeader('Authorization', `Bearer ${idToken}`);
+            xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`);
 
             xhr.upload.onprogress = (e) => {
                 if (e.lengthComputable && progressBar) {
@@ -3269,12 +3279,12 @@ async function handleUploadResource() {
             xhr.onload = () => {
                 try {
                     const data = JSON.parse(xhr.responseText);
-                    if (xhr.status === 200 && data.success) {
-                        resolve(data.downloadURL);
+                    if (xhr.status === 200 && data.secure_url) {
+                        resolve(data.secure_url);
                     } else {
-                        reject(new Error(data.error || `Lỗi server (${xhr.status})`));
+                        reject(new Error(data.error?.message || `Lỗi Cloudinary (${xhr.status})`));
                     }
-                } catch (e) { reject(new Error('Phản hồi server không hợp lệ')); }
+                } catch (e) { reject(new Error('Phản hồi Cloudinary không hợp lệ')); }
             };
             xhr.onerror = () => reject(new Error('Lỗi kết nối mạng'));
             xhr.send(formData);
@@ -3321,9 +3331,9 @@ async function handleUploadResource() {
 // VOUCHER SYSTEM
 // ==========================================
 function openVoucherModal() {
-    if (!AUTH.currentUser) {
+    if (!AUTH.isAuth()) {
         showToast('Vui lòng đăng nhập để sử dụng tính năng này!', 'error');
-        return;
+        return showAuthModal();
     }
     document.getElementById('voucher-modal').style.display = 'flex';
     document.getElementById('voucher-code-input').value = '';
@@ -3335,7 +3345,7 @@ function closeVoucherModal() {
 }
 
 async function submitVoucher() {
-    if (!AUTH.currentUser) return;
+    if (!AUTH.isAuth()) return;
     const codeInput = document.getElementById('voucher-code-input');
     const msgEl = document.getElementById('voucher-message');
     const btn = document.getElementById('btn-submit-voucher');
@@ -3344,7 +3354,7 @@ async function submitVoucher() {
         msgEl.innerHTML = '<span style="color: var(--red-500);">Vui lòng nhập mã voucher!</span>';
         return;
     }
-    const uid = AUTH.currentUser.uid;
+    const uid = AUTH.getUser().uid;
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang kiểm tra...';
     msgEl.innerHTML = '';
@@ -3391,15 +3401,15 @@ async function submitVoucher() {
                 points: currentPoints + pointsToAdd
             });
         });
-        msgEl.innerHTML = <span style="color: var(--green-500);"><i class="fas fa-check-circle"></i> Chúc mừng! Bạn được cộng  Đ.</span>;
+        msgEl.innerHTML = `<span style="color: var(--green-500);"><i class="fas fa-check-circle"></i> Chúc mừng! Bạn được cộng ${pointsToAdd.toLocaleString()} Đ.</span>`;
         codeInput.value = '';
         const freshUser = await db.collection('users').doc(uid).get();
         if (freshUser.exists) {
             document.querySelectorAll('.user-points-display').forEach(el => {
-                el.innerHTML = <i class="fas fa-coins" style="color:#eab308"></i>  Đ;
+                el.innerHTML = `<i class="fas fa-coins" style="color:#eab308"></i> ${freshUser.data().points_balance?.toLocaleString() || 0} Đ`;
             });
         }
-        showToast("Sử dụng Voucher thành công! + Đ", "success");
+        showToast(`Sử dụng Voucher thành công! +${pointsToAdd.toLocaleString()} Đ`, "success");
         setTimeout(() => { closeVoucherModal(); msgEl.innerHTML = ''; }, 2500);
     } catch (error) {
         console.error("Lỗi áp dụng voucher:", error);
