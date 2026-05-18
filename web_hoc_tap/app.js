@@ -1,4 +1,4 @@
-/* ============================================
+﻿/* ============================================
    STUDY PLATFORM - Main Application Logic
    Firebase Firestore Integration
    ============================================ */
@@ -173,10 +173,11 @@ function setupEventListeners() {
     // Logo → home
     document.getElementById('logo-home-btn')?.addEventListener('click', () => navigateTo('home'));
 
-    // Save buttons (ADMIN ONLY)
+    // Save buttons
     document.getElementById('btn-save-subject').addEventListener('click', () => AUTH.requireAdmin(saveSubject));
     document.getElementById('btn-save-topic').addEventListener('click', () => AUTH.requireAdmin(saveTopic));
-    document.getElementById('btn-save-note').addEventListener('click', () => AUTH.requireAdmin(saveNote));
+    // Note: mọi user đăng nhập đều lưu được ghi chú
+    document.getElementById('btn-save-note').addEventListener('click', saveNote);
 
     // Confirm
     document.getElementById('btn-confirm-action').addEventListener('click', () => {
@@ -275,7 +276,7 @@ function navigateTo(page) {
     
     // Allow viewing list pages (home, subjects, notes) publicly
     // but protect detailed views and administrative pages
-    const protectedPages = ['progress', 'exams', 'ai-generator', 'manual-exam', 'created-exams', 'favorite-exams', 'practice-results', 'upgrade'];
+    const protectedPages = ['progress', 'exams', 'ai-generator', 'manual-exam', 'created-exams', 'favorite-exams', 'saved-documents', 'practice-results', 'upgrade'];
     if (protectedPages.includes(page) && !AUTH.isAuth()) {
         AUTH.requireUser(() => navigateTo(page));
         return;
@@ -296,6 +297,7 @@ function navigateTo(page) {
     if (page === 'manual-exam') initManualExamPage();
     if (page === 'created-exams') initCreatedExamsPage();
     if (page === 'favorite-exams') initFavoriteExamsPage();
+    if (page === 'saved-documents') initSavedDocumentsPage();
     if (page === 'practice-results') initPracticeResultsPage();
     if (page === 'upgrade') initUpgradePage();
 }
@@ -662,12 +664,25 @@ async function saveNote() {
 async function deleteNote(noteId) {
     const note = AppState.notes.find(n => n.id === noteId);
     const uid = AUTH.isAuth() ? AUTH.getUser().uid : null;
+    const isAdmin = AUTH.isAdmin();
 
-    // Kiểm tra quyền: chủ sở hữu hoặc admin
-    if (note?.userId && note.userId !== uid && !AUTH.isAdmin()) {
-        showToast('Bạn không có quyền xóa ghi chú này!', 'error');
-        return;
+    // Admin có thể xóa tất cả
+    // User chỉ xóa ghi chú của chính mình (có userId khớp)
+    // Ghi chú cũ không có userId: chỉ admin mới xóa được
+    if (!isAdmin) {
+        if (!note?.userId) {
+            showToast('Bạn không có quyền xóa ghi chú này!', 'error');
+            return;
+        }
+        if (note.userId !== uid) {
+            showToast('Bạn chỉ có thể xóa ghi chú của chính mình!', 'error');
+            return;
+        }
     }
+
+    if (!confirm(isAdmin && note?.userId !== uid
+        ? `Xóa ghi chú của người dùng khác? (Admin)`
+        : 'Xóa ghi chú này?')) return;
 
     try {
         await notesRef.doc(noteId).delete();
@@ -704,6 +719,34 @@ function renderSubjects() {
     renderPublicExams();
 }
 
+// Category filter state
+AppState.categoryFilter = 'all';
+
+function filterByCategory(category, cardEl) {
+    AppState.categoryFilter = category;
+
+    // Update active state tr�n cards
+    document.querySelectorAll('#category-track .category-card').forEach(c => c.classList.remove('active'));
+    if (cardEl) cardEl.classList.add('active');
+
+    // C?p nh?t badge
+    const badge = document.getElementById('category-active-badge');
+    if (badge) {
+        if (category === 'all') {
+            badge.style.display = 'none';
+        } else {
+            badge.style.display = 'inline-flex';
+            badge.innerHTML = `<i class="fas fa-tag" style="margin-right:5px"></i>${category} <button onclick="filterByCategory('all',null)" style="background:none;border:none;cursor:pointer;margin-left:6px;color:inherit;font-size:12px;padding:0">?</button>`;
+        }
+    }
+
+    // Scroll grid v�o view
+    const grid = document.getElementById('subjects-grid');
+    if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    renderPublicExams();
+}
+
 async function renderPublicExams() {
     const container = document.getElementById('subjects-grid');
     if (!container) return;
@@ -735,6 +778,16 @@ async function renderPublicExams() {
 
         if (diffFilter !== 'all') {
             exams = exams.filter(e => e.difficulty === diffFilter);
+        }
+
+        // Apply category filter
+        const catFilter = AppState.categoryFilter || 'all';
+        if (catFilter !== 'all') {
+            exams = exams.filter(e => {
+                const subj = (e.subject || '').toLowerCase();
+                const cat = catFilter.toLowerCase();
+                return subj.includes(cat) || cat.includes(subj.split(' ')[0]);
+            });
         }
 
         if (exams.length === 0) {
@@ -915,17 +968,22 @@ window.unlockPublicExam = async function(examId, price, title) {
         
         const examData = examDoc.data();
         examData.purchasedAt = firebase.firestore.FieldValue.serverTimestamp();
-        
-        // Add to saved_exams library
-        await db.collection('users').doc(user.uid).collection('saved_exams').add(examData);
-        
-        // Increment downloads
-        await db.collection('public_exams').doc(examId).update({
-            downloads: firebase.firestore.FieldValue.increment(1)
-        });
-        
-        showToast('Đã lưu vào thư viện! 🔖', 'success');
-        setTimeout(() => navigateTo('favorite-exams'), 1200);
+        examData.savedAt = firebase.firestore.FieldValue.serverTimestamp();
+
+        const rType = examData.resourceType || 'exam';
+        const isDocument = rType !== 'exam'; // document, note, flashcard → tài liệu
+
+        if (isDocument) {
+            // Tài liệu → lưu vào saved_documents
+            await db.collection('users').doc(user.uid).collection('saved_documents').add(examData);
+            showToast('Đã lưu vào Tài liệu đã lưu! 📁', 'success');
+            setTimeout(() => navigateTo('saved-documents'), 1200);
+        } else {
+            // Đề thi → lưu vào saved_exams
+            await db.collection('users').doc(user.uid).collection('saved_exams').add(examData);
+            showToast('Đã lưu vào Đề đã lưu! 🔖', 'success');
+            setTimeout(() => navigateTo('favorite-exams'), 1200);
+        }
     } catch (e) {
         console.error("Error unlocking exam:", e);
         showToast('Có lỗi xảy ra khi lấy đề thi', 'error');
@@ -1186,9 +1244,8 @@ function createSubjectCard(subject) {
 }
 
 function attachSubjectCardEvents(container) {
-    container.querySelectorAll('.subject-card').forEach(card => {
+    container.querySelectorAll('.exam-item-card').forEach(card => {
         card.addEventListener('click', () => {
-            // Require login to see subject details
             AUTH.requireUser(() => showSubjectDetail(card.dataset.id));
         });
     });
@@ -1311,7 +1368,7 @@ function renderNotes() {
         const bg = n.color || notePalette[i % notePalette.length];
         const rot = rotations[i % rotations.length];
         const isOwner = uid && n.userId === uid;
-        const canDelete = isOwner || AUTH.isAdmin() || !n.userId;
+        const canDelete = AUTH.isAdmin() || isOwner; // Admin xóa tất cả, user chỉ xóa của mình
         const isPrivate = n.isPrivate;
 
         return `
@@ -1340,13 +1397,6 @@ function filterNotes(filter, btnEl) {
     document.querySelectorAll('.notes-filter-btn').forEach(b => b.classList.remove('active'));
     if (btnEl) btnEl.classList.add('active');
     renderNotes();
-}
-                <i class="fas fa-clock" style="font-size:10px;"></i>
-                ${formatDate(n.createdAt)}
-            </div>
-        </div>
-    `;
-    }).join('');
 }
 
 function renderProgress() {
@@ -2013,58 +2063,72 @@ async function publishExamToSystem() {
         return;
     }
 
-    const questionCount = currentAIExtractedExam.questions.length;
-    let totalCost = 0;
-    
-    if (currentAIExtractedExam.isManual) {
-        // Manual exam publish cost: 20 pts per question
-        totalCost = questionCount * 20;
-    } else {
-        // AI exam publish cost: 10% of generation cost (pre-calculated)
-        totalCost = window.currentExamPublishCost || Math.round((questionCount * 40) * 0.1);
-    }
-    
-    if (typeof PointsSystem !== 'undefined' && PointsSystem.tier === 'pro') {
-        totalCost = 0; // Pro users publish for free
-    }
-    
-    // Show Modal
     const modal = document.getElementById('modal-publish-exam');
     const costDisplay = document.getElementById('modal-publish-system-cost');
     const balanceDisplay = document.getElementById('modal-publish-current-balance');
-    
-    costDisplay.textContent = totalCost > 0 ? `${totalCost.toLocaleString()} Đ` : 'Miễn phí';
-    
-    if (typeof PointsSystem !== 'undefined') {
+    const privacySelect = document.getElementById('publish-privacy-select');
+    const priceGroup = document.getElementById('publish-price-group');
+
+    // Reset modal
+    if (privacySelect) privacySelect.value = 'public';
+    if (priceGroup) priceGroup.style.display = 'none';
+    if (costDisplay) costDisplay.textContent = 'Miễn phí';
+    if (balanceDisplay && typeof PointsSystem !== 'undefined') {
         balanceDisplay.textContent = `${PointsSystem.balance.toLocaleString()} Đ`;
     }
-    
+
+    // Cập nhật phí khi đổi privacy
+    const updateCostDisplay = () => {
+        const privacy = privacySelect?.value || 'public';
+        const sellPrice = parseInt(document.getElementById('publish-price-input')?.value) || 0;
+
+        let fee = 0;
+        let feeText = 'Miễn phí';
+
+        if (privacy === 'sell' && sellPrice > 0) {
+            fee = Math.round(sellPrice * 0.1); // 10% phí
+            feeText = `${fee.toLocaleString()} Đ (10% phí hoa hồng)`;
+        }
+        // public hoặc private: miễn phí
+
+        if (costDisplay) costDisplay.textContent = feeText;
+        return fee;
+    };
+
+    privacySelect?.addEventListener('change', () => {
+        togglePublishPriceInput();
+        updateCostDisplay();
+    });
+    document.getElementById('publish-price-input')?.addEventListener('input', updateCostDisplay);
+
     modal.classList.add('visible');
-    
+
     // Bind Confirm button
     const btnConfirm = document.getElementById('btn-confirm-publish');
-    // Remove old listeners to prevent duplicates
     const newBtn = btnConfirm.cloneNode(true);
     btnConfirm.parentNode.replaceChild(newBtn, btnConfirm);
-    
+
     newBtn.addEventListener('click', async () => {
         const privacy = document.getElementById('publish-privacy-select').value;
-        const sellPrice = parseInt(document.getElementById('publish-price-input').value) || 0;
-        
+        const sellPrice = parseInt(document.getElementById('publish-price-input')?.value) || 0;
+
         if (privacy === 'sell' && sellPrice <= 0) {
             showToast('Vui lòng nhập giá bán hợp lệ (> 0 điểm)', 'error');
             return;
         }
 
-        if (typeof PointsSystem !== 'undefined' && totalCost > 0) {
-            const success = await PointsSystem.deductPoints(totalCost, `Đăng đề thi (${questionCount} câu, ${privacy})`);
-            if (!success) {
-                modal.classList.remove('visible');
+        // Tính phí: chỉ tính khi bán, = 10% giá bán
+        const fee = (privacy === 'sell' && sellPrice > 0) ? Math.round(sellPrice * 0.1) : 0;
+
+        if (fee > 0 && typeof PointsSystem !== 'undefined') {
+            if (PointsSystem.balance < fee) {
+                showToast(`Không đủ điểm! Cần ${fee.toLocaleString()} Đ phí hoa hồng (10% giá bán).`, 'error');
                 return;
             }
+            const success = await PointsSystem.deductPoints(fee, `Phí đăng bán đề thi (10% × ${sellPrice.toLocaleString()} Đ)`);
+            if (!success) return;
         }
-        
-        // Hide modal
+
         modal.classList.remove('visible');
 
         // Save to Database
@@ -2240,17 +2304,16 @@ function setupAITokenCounter() {
 }
 
 function calculateAIGenCost() {
-    const textEl = document.getElementById('ai-source-text');
-    const textLen = textEl ? textEl.value.trim().length : 0;
-    
     const qCountEl = document.getElementById('ai-question-count');
     const qCount = qCountEl ? (parseInt(qCountEl.value) || 10) : 10;
-    
-    let costPerQ = 40;
-    if (textLen > 1000) costPerQ = 50;
-    if (textLen > 3000) costPerQ = 60; // Max cost per question
-    
-    return { costPerQ, totalCost: costPerQ * qCount, qCount, textLen };
+
+    // Cơ chế giảm dần: càng nhiều câu càng rẻ/câu
+    // 5q=30Đ  10q=25Đ  15q=22Đ  20q=20Đ  30q=17Đ  50q=13Đ  100q=10Đ
+    // Công thức: costPerQ = max(10, floor(32 - (qCount-5) * 0.23))
+    const costPerQ = Math.max(10, Math.floor(32 - (qCount - 5) * 0.23));
+    const totalCost = costPerQ * qCount;
+
+    return { costPerQ, totalCost, qCount };
 }
 
 function updateAIGenCostUI() {
@@ -2259,7 +2322,13 @@ function updateAIGenCostUI() {
     const btnCostEl = document.getElementById('ai-btn-cost-text');
     
     if (estimateEl) {
-        estimateEl.innerHTML = `<strong>Dự kiến:</strong> <span style="color:var(--orange-600);font-weight:700">${costData.totalCost.toLocaleString()} Đ</span> (${costData.costPerQ} Đ/câu)`;
+        const tier = typeof PointsSystem !== 'undefined' ? (PointsSystem.tier || 'free') : 'free';
+        const isFree = tier === 'free' || tier === 'go';
+        if (isFree) {
+            estimateEl.innerHTML = `<strong>Chi phí:</strong> <span style="color:#d97706;font-weight:800">${costData.totalCost.toLocaleString()} Đ</span> <span style="color:var(--text-muted);font-size:11px">(${costData.costPerQ} Đ/câu × ${costData.qCount} câu)</span>`;
+        } else {
+            estimateEl.innerHTML = `<strong>Chi phí:</strong> <span style="color:#10b981;font-weight:800;text-decoration:line-through">${costData.totalCost.toLocaleString()} Đ</span> <span style="color:#10b981;font-weight:800">Hoàn 100%</span> <span style="color:var(--text-muted);font-size:11px">(gói ${tier.toUpperCase()})</span>`;
+        }
     }
     if (btnCostEl) {
         btnCostEl.textContent = `Thanh toán: ${costData.totalCost.toLocaleString()} Đ`;
@@ -2438,6 +2507,21 @@ async function callDeepSeekForQuestions(apiKey, text, subject) {
     const questionCount = qCountEl ? parseInt(qCountEl.value) : 5;
     const difficulty = diffEl ? diffEl.value : 'medium';
 
+    // Đọc các loại câu hỏi được chọn
+    const typeMap = {
+        mcq:   document.getElementById('ai-type-mcq')?.checked,
+        tf:    document.getElementById('ai-type-tf')?.checked,
+        multi: document.getElementById('ai-type-multi')?.checked,
+        fill:  document.getElementById('ai-type-fill')?.checked,
+        flash: document.getElementById('ai-type-flash')?.checked,
+        short: document.getElementById('ai-type-short')?.checked,
+    };
+    const selectedTypes = Object.entries(typeMap)
+        .filter(([, checked]) => checked)
+        .map(([type]) => type);
+    // Nếu không chọn gì thì mặc định MCQ
+    const questionTypes = selectedTypes.length > 0 ? selectedTypes : ['mcq'];
+
     const response = await fetch('/api/ai-generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2445,7 +2529,8 @@ async function callDeepSeekForQuestions(apiKey, text, subject) {
             sourceText: text,
             subject: subject,
             questionCount: questionCount,
-            difficulty: difficulty
+            difficulty: difficulty,
+            questionTypes: questionTypes
         })
     });
 
@@ -2479,11 +2564,11 @@ function renderAIPreviewWorkspace() {
     let totalPublishCost = 0;
 
     currentAIExtractedExam.questions.forEach((q, idx) => {
-        // Tính toán chi phí động: 10 - 20đ / câu dựa trên độ dài (văn bản)
+        // Tính toán chi phí động: 40 - 60đ / câu dựa trên độ dài (văn bản)
         const qLength = q.content.length + (q.explanation ? q.explanation.length : 0);
-        let qCost = 10;
-        if (qLength > 200) qCost = 15;
-        if (qLength > 400) qCost = 20;
+        let qCost = 40;
+        if (qLength > 200) qCost = 50;
+        if (qLength > 400) qCost = 60;
         totalPublishCost += qCost;
 
         const card = document.createElement('div');
@@ -2595,10 +2680,11 @@ async function saveExamToLibrary() {
     if (!currentAIExtractedExam) return;
     if (!AUTH.isAuth()) {
         showToast('Vui lòng đăng nhập để lưu đề thi!', 'error');
-        return;
+        return showAuthModal();
     }
 
     const user = AUTH.getUser();
+    const now = new Date().toISOString();
     const examData = {
         title: currentAIExtractedExam.title,
         subject: currentAIExtractedExam.subject,
@@ -2606,28 +2692,35 @@ async function saveExamToLibrary() {
         qualityScore: currentAIExtractedExam.qualityScore,
         questions: currentAIExtractedExam.questions,
         type: 'ai',
-        createdAt: new Date().toISOString()
+        createdAt: now,
+        savedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
     const btnSave = document.getElementById('btn-ai-save-library');
-    btnSave.disabled = true;
-    btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang lưu...`;
+    if (btnSave) {
+        btnSave.disabled = true;
+        btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang lưu...`;
+    }
 
     try {
         await db.collection('users').doc(user.uid).collection('saved_exams').add(examData);
         showToast('Đã lưu vào thư viện! 🔖', 'success');
         setTimeout(() => navigateTo('favorite-exams'), 1000);
     } catch (err) {
-        console.error('Failed to save to Firestore, using LocalStorage:', err);
+        console.error('Failed to save to Firestore:', err);
+        // Fallback localStorage — dùng timestamp thường vì serverTimestamp không work offline
+        examData.savedAt = now;
         let offline = JSON.parse(localStorage.getItem('saved_exams') || '[]');
-        offline.unshift(examData);
+        offline.unshift({ ...examData, id: 'local_' + Date.now() });
         localStorage.setItem('saved_exams', JSON.stringify(offline));
         showToast('Đã lưu (Chế độ offline)!', 'success');
         setTimeout(() => navigateTo('favorite-exams'), 1000);
     }
 
-    btnSave.disabled = false;
-    btnSave.innerHTML = `<i class="fas fa-floppy-disk"></i> Lưu vào thư viện`;
+    if (btnSave) {
+        btnSave.disabled = false;
+        btnSave.innerHTML = `<i class="fas fa-floppy-disk"></i> Lưu vào thư viện`;
+    }
 }
 
 // ===== CREATED EXAMS PAGE — redirect to saved =====
@@ -3049,6 +3142,7 @@ async function saveManualExam() {
         questionCount: ManualExamState.questions.length,
         createdBy: AUTH.getUser().uid,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        savedAt: firebase.firestore.FieldValue.serverTimestamp(),
         type: 'manual', isFavorite: false
     };
 
@@ -3105,90 +3199,214 @@ function toggleUploadResourcePrice() {
 }
 
 async function handleUploadResource() {
-    const title = document.getElementById('upload-resource-title').value.trim();
+    if (!AUTH.isAuth()) { showAuthModal(); return; }
+
+    const title   = document.getElementById('upload-resource-title').value.trim();
     const subject = document.getElementById('upload-resource-subject').value.trim();
-    const desc = document.getElementById('upload-resource-desc').value.trim();
-    const type = document.getElementById('upload-resource-type').value;
+    const desc    = document.getElementById('upload-resource-desc').value.trim();
+    const type    = document.getElementById('upload-resource-type').value;
     const privacy = document.getElementById('upload-resource-privacy').value;
-    const price = privacy === 'sell' ? (parseInt(document.getElementById('upload-resource-price').value) || 0) : 0;
-    
-    const fileInput = document.getElementById('upload-resource-file');
-    const file = fileInput.files[0];
+    const price   = privacy === 'sell' ? (parseInt(document.getElementById('upload-resource-price').value) || 0) : 0;
+    const file    = document.getElementById('upload-resource-file').files[0];
 
     if (!title || !subject || !file) {
-        showToast('Vui lòng điền đầy đủ các trường bắt buộc (*)', 'error');
-        return;
+        showToast('Vui lòng điền đầy đủ các trường bắt buộc (*)', 'error'); return;
+    }
+    if (privacy === 'sell' && price <= 0) {
+        showToast('Vui lòng nhập giá bán hợp lệ (> 0 điểm)', 'error'); return;
     }
 
-    if (privacy === 'sell' && price <= 0) {
-        showToast('Vui lòng nhập giá bán hợp lệ (> 0 điểm)', 'error');
-        return;
+    // Kiểm tra kích thước file (30MB)
+    const fileMB = file.size / (1024 * 1024);
+    if (fileMB > 30) {
+        showToast(`File quá lớn (${fileMB.toFixed(1)}MB). Tối đa 30MB.`, 'error'); return;
     }
-    
-    // UI Progress
+
+    const user = AUTH.getUser();
+    const tier = typeof PointsSystem !== 'undefined' ? (PointsSystem.tier || 'free') : 'free';
+    const limits = { free: 3, go: 3, plus: 15, ultra: 50 };
+    const maxFiles = limits[tier] || 3;
+
     const btnConfirm = document.getElementById('btn-confirm-upload-resource');
     const progressContainer = document.getElementById('upload-resource-progress-container');
     const progressBar = document.getElementById('upload-resource-progress-bar');
     const progressText = document.getElementById('upload-resource-progress-text');
-    
+
     btnConfirm.disabled = true;
-    btnConfirm.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang xử lý...`;
-    progressContainer.style.display = 'block';
-    
+    btnConfirm.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang kiểm tra...`;
+    if (progressContainer) progressContainer.style.display = 'block';
+
     try {
-        const user = AUTH.getUser();
-        
-        // 1. Upload file to Firebase Storage
-        const storageRef = firebase.storage().ref();
-        const filePath = `marketplace/${user.uid}/${Date.now()}_${file.name}`;
-        const fileRef = storageRef.child(filePath);
-        
-        const uploadTask = fileRef.put(file);
-        
-        await new Promise((resolve, reject) => {
-            uploadTask.on('state_changed', 
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    progressBar.style.width = progress + '%';
-                    progressText.textContent = `Đang tải lên: ${Math.round(progress)}%`;
-                }, 
-                (error) => { reject(error); }, 
-                () => { resolve(); }
-            );
+        // Kiểm tra số lượng file đã đăng
+        const existingSnap = await db.collection('public_exams')
+            .where('authorId', '==', user.uid).get();
+        if (existingSnap.size >= maxFiles) {
+            showToast(`Đã đạt giới hạn ${existingSnap.size}/${maxFiles} tài liệu (gói ${tier.toUpperCase()}). Gỡ tài liệu cũ để đăng thêm.`, 'error');
+            return;
+        }
+
+        // Lấy ID token để xác thực với Vercel API
+        if (progressText) progressText.textContent = 'Đang tải file lên...';
+        const idToken = await firebase.auth().currentUser.getIdToken(true);
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Upload qua Vercel API (bypass CORS)
+        const downloadURL = await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api/upload-resource');
+            xhr.setRequestHeader('Authorization', `Bearer ${idToken}`);
+
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable && progressBar) {
+                    const pct = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = pct + '%';
+                    if (progressText) progressText.textContent = `Đang tải lên: ${pct}%`;
+                }
+            };
+
+            xhr.onload = () => {
+                try {
+                    const data = JSON.parse(xhr.responseText);
+                    if (xhr.status === 200 && data.success) {
+                        resolve(data.downloadURL);
+                    } else {
+                        reject(new Error(data.error || `Lỗi server (${xhr.status})`));
+                    }
+                } catch (e) { reject(new Error('Phản hồi server không hợp lệ')); }
+            };
+            xhr.onerror = () => reject(new Error('Lỗi kết nối mạng'));
+            xhr.send(formData);
         });
-        
-        const downloadURL = await fileRef.getDownloadURL();
-        
-        // 2. Save metadata to Firestore
-        const resourceData = {
+
+        if (progressText) progressText.textContent = 'Đang lưu thông tin...';
+        if (progressBar) progressBar.style.width = '100%';
+
+        // Lưu metadata vào Firestore
+        await db.collection('public_exams').add({
             title, subject, description: desc,
             resourceType: type,
             fileUrl: downloadURL,
             fileName: file.name,
+            fileSizeMB: parseFloat(fileMB.toFixed(2)),
             difficulty: 'mixed',
             price, isPaid: price > 0,
             questionCount: 0,
             authorId: user.uid,
+            authorUid: user.uid,
             authorEmail: user.email,
             authorName: user.displayName || user.email.split('@')[0],
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            downloadCount: 0,
+            postedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            downloads: 0,
             isManual: true
-        };
-        
-        await db.collection('public_exams').add(resourceData);
-        
-        showToast('Đã đăng tài liệu thành công!', 'success');
+        });
+
+        showToast(`Đã đăng tài liệu thành công! (${existingSnap.size + 1}/${maxFiles} slot)`, 'success');
         closeUploadResourceModal();
-        renderMarketplace(); // Refresh list
-        
+        renderMarketplace();
+
     } catch (err) {
-        console.error('Lỗi khi tải lên:', err);
-        showToast('Lỗi tải lên: ' + err.message, 'error');
+        console.error('handleUploadResource error:', err);
+        showToast('Lỗi: ' + err.message, 'error');
     } finally {
         btnConfirm.disabled = false;
         btnConfirm.innerHTML = `<i class="fas fa-check-circle"></i> Xác nhận Đăng Tải`;
-        progressContainer.style.display = 'none';
-        progressBar.style.width = '0%';
+        if (progressContainer) progressContainer.style.display = 'none';
+        if (progressBar) progressBar.style.width = '0%';
     }
 }
+// ==========================================
+// VOUCHER SYSTEM
+// ==========================================
+function openVoucherModal() {
+    if (!AUTH.currentUser) {
+        showToast('Vui lòng đăng nhập để sử dụng tính năng này!', 'error');
+        return;
+    }
+    document.getElementById('voucher-modal').style.display = 'flex';
+    document.getElementById('voucher-code-input').value = '';
+    document.getElementById('voucher-message').innerHTML = '';
+}
+
+function closeVoucherModal() {
+    document.getElementById('voucher-modal').style.display = 'none';
+}
+
+async function submitVoucher() {
+    if (!AUTH.currentUser) return;
+    const codeInput = document.getElementById('voucher-code-input');
+    const msgEl = document.getElementById('voucher-message');
+    const btn = document.getElementById('btn-submit-voucher');
+    let code = codeInput.value.trim().toUpperCase();
+    if (!code) {
+        msgEl.innerHTML = '<span style="color: var(--red-500);">Vui lòng nhập mã voucher!</span>';
+        return;
+    }
+    const uid = AUTH.currentUser.uid;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang kiểm tra...';
+    msgEl.innerHTML = '';
+    try {
+        const voucherRef = db.collection('vouchers').doc(code);
+        const doc = await voucherRef.get();
+        if (!doc.exists) {
+            msgEl.innerHTML = '<span style="color: var(--red-500);"><i class="fas fa-exclamation-circle"></i> Mã voucher không tồn tại hoặc đã hết hạn!</span>';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-gift"></i> Xác nhận mã';
+            return;
+        }
+        const data = doc.data();
+        if (data.active === false) {
+            msgEl.innerHTML = '<span style="color: var(--red-500);"><i class="fas fa-exclamation-circle"></i> Mã voucher này đã bị vô hiệu hóa!</span>';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-gift"></i> Xác nhận mã';
+            return;
+        }
+        const usedBy = data.usedBy || [];
+        if (usedBy.includes(uid)) {
+            msgEl.innerHTML = '<span style="color: var(--red-500);"><i class="fas fa-exclamation-circle"></i> Bạn đã sử dụng mã voucher này rồi!</span>';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-gift"></i> Xác nhận mã';
+            return;
+        }
+        if (data.maxUses && usedBy.length >= data.maxUses) {
+            msgEl.innerHTML = '<span style="color: var(--red-500);"><i class="fas fa-exclamation-circle"></i> Mã voucher này đã hết lượt sử dụng!</span>';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-gift"></i> Xác nhận mã';
+            return;
+        }
+        const pointsToAdd = data.points || 0;
+        await db.runTransaction(async (transaction) => {
+            const userRef = db.collection('users').doc(uid);
+            const userDoc = await transaction.get(userRef);
+            if (!userDoc.exists) throw "Tài khoản không tồn tại!";
+            const userData = userDoc.data();
+            const currentPoints = userData.points || 0;
+            transaction.update(voucherRef, {
+                usedBy: firebase.firestore.FieldValue.arrayUnion(uid)
+            });
+            transaction.update(userRef, {
+                points: currentPoints + pointsToAdd
+            });
+        });
+        msgEl.innerHTML = <span style="color: var(--green-500);"><i class="fas fa-check-circle"></i> Chúc mừng! Bạn được cộng  Đ.</span>;
+        codeInput.value = '';
+        const freshUser = await db.collection('users').doc(uid).get();
+        if (freshUser.exists) {
+            document.querySelectorAll('.user-points-display').forEach(el => {
+                el.innerHTML = <i class="fas fa-coins" style="color:#eab308"></i>  Đ;
+            });
+        }
+        showToast("Sử dụng Voucher thành công! + Đ", "success");
+        setTimeout(() => { closeVoucherModal(); msgEl.innerHTML = ''; }, 2500);
+    } catch (error) {
+        console.error("Lỗi áp dụng voucher:", error);
+        msgEl.innerHTML = '<span style="color: var(--red-500);"><i class="fas fa-exclamation-triangle"></i> Lỗi hệ thống. Vui lòng thử lại!</span>';
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-gift"></i> Xác nhận mã';
+    }
+}
+
