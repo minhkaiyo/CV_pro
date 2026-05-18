@@ -26,24 +26,49 @@ export default async function handler(req, res) {
             return res.redirect(302, decodedUrl);
         }
 
-        // Cloudinary URL — redirect trực tiếp (không cần proxy)
+        // Cloudinary URL — redirect trực tiếp hoặc proxy tùy định dạng
         if (decodedUrl.includes('res.cloudinary.com')) {
-            // Loại bỏ dấu tiếng Việt, ký tự đặc biệt và khoảng trắng để tránh lỗi 400 Bad Request từ Cloudinary
-            const rawFileName = fileName.replace(/\.[^.]+$/, '');
-            const safeFileName = rawFileName
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '') // Bỏ dấu
-                .replace(/đ/g, 'd').replace(/Đ/g, 'D')
-                .replace(/\s+/g, '_') // Thay khoảng trắng bằng dấu gạch dưới
-                .replace(/[^a-zA-Z0-9\-_]/g, ''); // Bỏ mọi ký tự lạ khác
+            const isPdf = decodedUrl.toLowerCase().split('?')[0].endsWith('.pdf');
             
-            const finalFileName = safeFileName || 'document';
-
-            // Thêm fl_attachment để Cloudinary tự trả header Content-Disposition
-            const dlUrl = decodedUrl.includes('/upload/')
-                ? decodedUrl.replace('/upload/', `/upload/fl_attachment:${finalFileName}/`)
-                : decodedUrl;
-            return res.redirect(302, dlUrl);
+            if (isPdf) {
+                // Đối với file PDF: Thử proxy fetch trước để ép tải xuống với tên file chuẩn UTF-8
+                // Tránh lỗi 401 (Unauthorized) của Cloudinary khi áp dụng transformation trên file PDF
+                try {
+                    const fileRes = await fetch(decodedUrl, {
+                        headers: { 'User-Agent': 'Mozilla/5.0' }
+                    });
+                    if (fileRes.ok) {
+                        const ct = fileRes.headers.get('content-type') || 'application/pdf';
+                        const cl = fileRes.headers.get('content-length');
+                        res.setHeader('Content-Type', ct);
+                        res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(fileName)}`);
+                        if (cl) res.setHeader('Content-Length', cl);
+                        
+                        const buffer = await fileRes.arrayBuffer();
+                        return res.send(Buffer.from(buffer));
+                    }
+                } catch (err) {
+                    console.error("Proxy fetch PDF failed, falling back to direct redirect:", err);
+                }
+                
+                // Fallback: Redirect trực tiếp đến URL gốc của Cloudinary (không có fl_attachment sẽ không bị 401)
+                return res.redirect(302, decodedUrl);
+            } else {
+                // Các định dạng khác (docx, doc, txt...) dùng fl_attachment an toàn
+                const rawFileName = fileName.replace(/\.[^.]+$/, '');
+                const safeFileName = rawFileName
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '') // Bỏ dấu
+                    .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+                    .replace(/\s+/g, '_') // Thay khoảng trắng bằng dấu gạch dưới
+                    .replace(/[^a-zA-Z0-9\-_]/g, ''); // Bỏ mọi ký tự lạ khác
+                
+                const finalFileName = safeFileName || 'document';
+                const dlUrl = decodedUrl.includes('/upload/')
+                    ? decodedUrl.replace('/upload/', `/upload/fl_attachment:${finalFileName}/`)
+                    : decodedUrl;
+                return res.redirect(302, dlUrl);
+            }
         }
 
         // Các URL khác — proxy fetch
