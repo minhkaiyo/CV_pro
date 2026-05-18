@@ -3144,19 +3144,58 @@ async function saveManualExam() {
     const difficulty = document.getElementById('manual-difficulty').value;
     const duration = parseInt(document.getElementById('manual-duration').value);
 
+    const user = AUTH.getUser();
+    
+    const standardizedQuestions = ManualExamState.questions.map(q => {
+        let options = [];
+        let correct_answer = 'A';
+
+        if (q.type === 'mcq') {
+            options = Object.values(q.options || {});
+            correct_answer = q.correctAnswer;
+        } else if (q.type === 'tf') {
+            options = ['Đúng', 'Sai'];
+            correct_answer = q.correctAnswer === 'true' ? 'A' : 'B';
+        } else if (q.type === 'multi') {
+            options = Object.values(q.options || {});
+            correct_answer = q.correctAnswers && q.correctAnswers.length > 0 ? q.correctAnswers[0] : 'A';
+        } else {
+            options = ['(Câu hỏi tự luận/điền khuyết)'];
+            correct_answer = 'A';
+        }
+
+        return {
+            id: q.id || Date.now() + Math.random(),
+            content: q.question,
+            options: options,
+            correct_answer: correct_answer,
+            explanation: q.explanation || '',
+            difficulty: difficulty,
+            type: q.type
+        };
+    });
+
     const examData = {
         title, subject, difficulty, duration,
-        questions: ManualExamState.questions,
-        questionCount: ManualExamState.questions.length,
-        createdBy: AUTH.getUser().uid,
+        questions: standardizedQuestions,
+        questionCount: standardizedQuestions.length,
+        createdBy: user.uid,
+        authorName: user.displayName || user.email.split('@')[0],
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         savedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        type: 'manual', isFavorite: false
+        postedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        type: 'manual', 
+        isFavorite: false,
+        downloads: 0,
+        price: 0,
+        isPaid: false
     };
 
-    const user = AUTH.getUser();
     try {
+        // Lưu vào bộ sưu tập cá nhân
         await db.collection('users').doc(user.uid).collection('saved_exams').add(examData);
+        // Lưu vào public_exams để hiện Môn Học mới ở Chợ Đen và Kho Đề
+        await db.collection('public_exams').add(examData);
         showToast('Đã lưu đề thi vào thư viện! 🔖', 'success');
         trackUserActivity('Tạo đề thi thủ công: ' + title);
         document.getElementById('manual-exam-title').value = '';
