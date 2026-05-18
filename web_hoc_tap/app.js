@@ -3219,8 +3219,155 @@ async function saveManualExam() {
     }
 }
 
-function exportManualExamPDF() {
-    showToast('Tính năng xuất PDF đang được phát triển...', 'info');
+// Hàm tải thư viện động từ CDN
+function loadScript(url) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = url;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+async function exportManualExamPDF() {
+    if (!ManualExamState.questions.length) {
+        showToast('Vui lòng thêm ít nhất 1 câu hỏi để xuất PDF! 📝', 'error');
+        return;
+    }
+    
+    // Yêu cầu lựa chọn đính kèm đáp án
+    const includeAnswers = confirm("Bạn có muốn đính kèm Đáp án và Hướng dẫn giải chi tiết ở cuối đề thi không?");
+    showToast('Đang khởi tạo công cụ tạo PDF...', 'info');
+    
+    // Tải html2pdf.js động từ CDN nếu chưa có
+    if (typeof html2pdf === 'undefined') {
+        try {
+            await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
+        } catch (e) {
+            showToast('Lỗi tải thư viện xuất PDF. Vui lòng thử lại!', 'error');
+            return;
+        }
+    }
+    
+    const title = document.getElementById('manual-exam-title').value.trim() || 'Đề thi tự luận/trắc nghiệm';
+    const subject = document.getElementById('manual-subject').value.trim() || 'Tự do';
+    const duration = document.getElementById('manual-duration').value || '60';
+
+    const element = document.createElement('div');
+    element.className = 'pdf-export-template';
+    element.style.padding = '40px 50px';
+    element.style.color = '#1f2937';
+    element.style.fontFamily = "'Nunito', 'Segoe UI', Arial, sans-serif";
+    element.style.background = '#ffffff';
+
+    // Header section
+    let html = `
+        <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #1f2937; padding-bottom: 15px; margin-bottom: 30px;">
+            <div style="text-align: left; font-size: 13px; line-height: 1.6;">
+                <strong>HỆ THỐNG HỌC TẬP STUDYPORTAL</strong><br>
+                <span>Kho đề thi thủ công cá nhân</span>
+            </div>
+            <div style="text-align: right; font-size: 13px; line-height: 1.6;">
+                <strong>ĐỀ THI CHÍNH THỨC</strong><br>
+                <span>Thời gian: ${duration} phút</span>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-bottom: 35px;">
+            <h1 style="font-size: 20px; font-weight: 800; margin: 0 0 8px; text-transform: uppercase; color: #111827;">${title}</h1>
+            <p style="font-size: 14px; margin: 0; color: #4b5563;"><strong>Môn học:</strong> ${subject}</p>
+        </div>
+        
+        <div style="margin-bottom: 30px; font-size: 12px; border: 1px dashed #9ca3af; padding: 12px; border-radius: 6px;">
+            <strong>Họ & tên thí sinh:</strong>................................................................................... 
+            <strong style="margin-left: 20px;">Mã số SV:</strong>....................................
+        </div>
+    `;
+
+    // Questions section
+    html += '<div style="font-size: 14px; line-height: 1.6;">';
+    ManualExamState.questions.forEach((q, idx) => {
+        const qText = q.question || '';
+        const qType = q.type || 'mcq';
+        
+        html += `
+            <div style="margin-bottom: 25px; page-break-inside: avoid;">
+                <div style="font-weight: 700; margin-bottom: 8px;">Câu ${idx + 1}: ${qText}</div>
+        `;
+        
+        if (qType === 'mcq' || qType === 'multi') {
+            const opts = q.options || {};
+            html += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; padding-left: 15px;">`;
+            Object.entries(opts).forEach(([key, val]) => {
+                html += `<div style="font-size: 13px;"><strong>${key}.</strong> ${val}</div>`;
+            });
+            html += `</div>`;
+        } else if (qType === 'tf') {
+            html += `
+                <div style="display: flex; gap: 40px; padding-left: 15px; font-size: 13px;">
+                    <div><strong>A.</strong> Đúng</div>
+                    <div><strong>B.</strong> Sai</div>
+                </div>
+            `;
+        }
+        
+        html += `</div>`;
+    });
+    html += '</div>';
+
+    // Key / Explanations section if requested
+    if (includeAnswers) {
+        html += `
+            <div style="page-break-before: always; border-top: 2px dashed #9ca3af; padding-top: 30px; margin-top: 40px;">
+                <h2 style="font-size: 18px; font-weight: 800; text-align: center; margin-bottom: 25px; text-transform: uppercase; color: #111827;">ĐÁP ÁN & HƯỚNG DẪN GIẢI CHI TIẾT</h2>
+                <div style="font-size: 13px; line-height: 1.6;">
+        `;
+        
+        ManualExamState.questions.forEach((q, idx) => {
+            let ans = '';
+            if (q.type === 'mcq') {
+                ans = q.correctAnswer || 'A';
+            } else if (q.type === 'tf') {
+                ans = q.correctAnswer === 'true' ? 'Đúng' : 'Sai';
+            } else if (q.type === 'multi') {
+                ans = q.correctAnswers ? q.correctAnswers.join(', ') : 'A';
+            } else {
+                ans = q.correctAnswer || 'N/A';
+            }
+            
+            html += `
+                <div style="margin-bottom: 20px; page-break-inside: avoid; border-bottom: 1px solid #f3f4f6; padding-bottom: 15px;">
+                    <div style="font-weight: 700; color: #111827;">Câu ${idx + 1}: Đáp án: <span style="color: #059669; font-weight: 800;">${ans}</span></div>
+                    ${q.explanation ? `<div style="margin-top: 5px; color: #4b5563; font-style: italic; background: #f9fafb; padding: 10px; border-radius: 6px; border-left: 3px solid #10b981;"><strong>Lời giải:</strong> ${q.explanation}</div>` : ''}
+                </div>
+            `;
+        });
+        
+        html += `
+                </div>
+            </div>
+        `;
+    }
+
+    element.innerHTML = html;
+
+    // Config options for html2pdf
+    const opt = {
+        margin:       10,
+        filename:     `${title.toLowerCase().replace(/[^a-z0-9]/g, '_')}_exam.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    try {
+        await html2pdf().set(opt).from(element).save();
+        showToast('Xuất file PDF thành công! 🎉', 'success');
+    } catch (err) {
+        console.error('PDF export error:', err);
+        showToast('Lỗi trong quá trình tạo PDF: ' + err.message, 'error');
+    }
 }
 
 // ===== MARKETPLACE UPLOAD RESOURCE =====
