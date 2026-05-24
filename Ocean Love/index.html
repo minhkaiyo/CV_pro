@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Ocean Love — Lãng mạn đại dương vô tận</title>
+  <link rel="stylesheet" href="./styles/index.css">
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <h1 class="loader-title">Ocean Love</h1>
+    <div class="loader-bar-bg">
+      <div class="loader-bar" id="loader-bar"></div>
+    </div>
+    <div class="loader-status" id="loader-status">Đang khởi tạo đại dương...</div>
+    <button class="btn-cinematic loader-btn interactive" id="enter-btn">Bước vào giấc mơ</button>
+  </div>
+
+  <!-- Instruction Hint -->
+  <div class="interactive-hint" id="interact-hint">
+    Rê chuột và click vào hải âu để bay lượn<br>
+    Kéo chuột để xoay góc nhìn điện ảnh
+  </div>
+
+  <!-- Realtime 3D Canvas -->
+  <div id="canvas-container"></div>
+
+  <!-- Cinematic Overlay UI -->
+  <div class="overlay-container">
+    <!-- Header -->
+    <header class="experience-header">
+      <h2 class="experience-title">Ocean Love</h2>
+      <p class="experience-subtitle">Một giấc mơ giữa đại dương vô tận</p>
+    </header>
+
+    <!-- Bottom Controls -->
+    <div class="experience-controls">
+      <!-- Left side: Audio control -->
+      <div class="left-controls interactive">
+        <button class="btn-cinematic audio-btn" id="audio-toggle-btn">
+          <span id="audio-icon">🔇</span>
+          <span id="audio-status-text">Âm thanh</span>
+        </button>
+      </div>
+
+      <!-- Right side: Day/Night cycle controls -->
+      <div class="right-controls interactive">
+        <button class="btn-cinematic active" data-env="sunset">Hoàng hôn</button>
+        <button class="btn-cinematic" data-env="night">Đêm trăng</button>
+        <button class="btn-cinematic" data-env="dawn">Bình minh</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
