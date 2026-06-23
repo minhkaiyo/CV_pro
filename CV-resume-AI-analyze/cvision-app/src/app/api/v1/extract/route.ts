@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as pdfParseModule from "pdf-parse";
 import mammoth from "mammoth";
 import { GoogleGenAI } from "@google/genai";
 
 export const maxDuration = 60;
-
-// pdf-parse may export as default or named depending on bundler/version
-const pdfParse: (buffer: Buffer) => Promise<{ text: string }> =
-  (pdfParseModule as { default?: unknown }).default as ((buffer: Buffer) => Promise<{ text: string }>) ?? 
-  (pdfParseModule as unknown as (buffer: Buffer) => Promise<{ text: string }>);
 
 export async function POST(req: NextRequest) {
   try {
