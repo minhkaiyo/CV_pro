@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as pdfParseModule from "pdf-parse";
 import mammoth from "mammoth";
+import { GoogleGenAI } from "@google/genai";
 
 // pdf-parse may export as default or named depending on bundler/version
 const pdfParse: (buffer: Buffer) => Promise<{ text: string }> =
@@ -30,8 +31,29 @@ export async function POST(req: NextRequest) {
     } else if (ext === 'pdf') {
       const data = await pdfParse(buffer);
       extractedText = data.text;
+    } else if (['png', 'jpg', 'jpeg', 'webp'].includes(ext || '')) {
+      const geminiKey = process.env.GEMINI_API_KEY;
+      if (!geminiKey) {
+        return NextResponse.json({ error: "Tính năng trích xuất văn bản từ ảnh yêu cầu GEMINI_API_KEY trong biến môi trường." }, { status: 400 });
+      }
+      const ai = new GoogleGenAI({ apiKey: geminiKey });
+      const base64Image = buffer.toString("base64");
+      
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: [
+          "Vui lòng trích xuất toàn bộ văn bản có trong ảnh này (đây là CV). Giữ nguyên định dạng và bố cục tốt nhất có thể. Không bịa đặt thêm nội dung.",
+          {
+            inlineData: {
+              data: base64Image,
+              mimeType: file.type || 'image/png',
+            }
+          }
+        ]
+      });
+      extractedText = response.text || "";
     } else {
-      return NextResponse.json({ error: `Định dạng .${ext} không được hỗ trợ. Chỉ hỗ trợ txt, docx, pdf` }, { status: 415 });
+      return NextResponse.json({ error: `Định dạng .${ext} không được hỗ trợ. Hỗ trợ: txt, docx, pdf, png, jpg, webp` }, { status: 415 });
     }
 
     // Cleanup & Format Text

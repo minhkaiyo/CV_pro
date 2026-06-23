@@ -11,8 +11,8 @@ import { useCloudinaryUpload } from "@/hooks/useCloudinaryUpload";
 
 const MAX_SIZE_MB = 10;
 const ALLOWED_TYPES = ["application/pdf", "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
-const ALLOWED_EXT = [".pdf", ".doc", ".docx"];
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "image/png", "image/jpeg", "image/webp"];
+const ALLOWED_EXT = [".pdf", ".doc", ".docx", ".png", ".jpg", ".jpeg", ".webp"];
 
 export default function UploadPage() {
   const router = useRouter();
@@ -204,7 +204,7 @@ export default function UploadPage() {
           >
             <input
               type="file"
-              accept=".pdf,.doc,.docx"
+              accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
               onChange={handleFileChange}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               disabled={loading}
@@ -236,6 +236,7 @@ export default function UploadPage() {
                 <div className="mt-6 flex gap-2">
                   <span className="text-[10px] font-bold px-2 py-1 bg-gray-100 text-gray-500 rounded-md">PDF</span>
                   <span className="text-[10px] font-bold px-2 py-1 bg-gray-100 text-gray-500 rounded-md">DOCX</span>
+                  <span className="text-[10px] font-bold px-2 py-1 bg-gray-100 text-gray-500 rounded-md">IMG</span>
                   <span className="text-[10px] font-bold px-2 py-1 bg-gray-100 text-gray-500 rounded-md">&lt;{MAX_SIZE_MB}MB</span>
                 </div>
               </div>
