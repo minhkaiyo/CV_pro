@@ -91,11 +91,11 @@ export default function LoginPage() {
           src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2560&auto=format&fit=crop"
           alt="Background"
           fill
-          className="object-cover opacity-40"
+          className="object-cover opacity-50"
           priority
         />
         {/* Multi-layer overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-950/80 via-black/80 to-blue-950/80" />
+        <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/60 to-[#0a0a12]/90" />
         <div className="absolute inset-0 backdrop-blur-[4px]" />
         {/* Noise texture for depth */}
         <div className="absolute inset-0 opacity-[0.03]" style={{backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")'}} />

@@ -66,10 +66,10 @@ export default function RegisterPage() {
           src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2560&auto=format&fit=crop"
           alt="Background"
           fill
-          className="object-cover opacity-40"
+          className="object-cover opacity-50"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-bl from-blue-950/80 via-black/80 to-purple-950/80" />
+        <div className="absolute inset-0 bg-gradient-to-bl from-black/80 via-black/60 to-[#0a0a12]/90" />
         <div className="absolute inset-0 backdrop-blur-[4px]" />
       </div>
 
