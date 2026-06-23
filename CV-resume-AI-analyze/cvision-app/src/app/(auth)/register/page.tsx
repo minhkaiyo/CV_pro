@@ -80,7 +80,7 @@ export default function RegisterPage() {
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 w-full max-w-[980px] flex flex-col lg:flex-row-reverse rounded-[28px] overflow-hidden"
         style={{
-          background: "rgba(10, 10, 20, 0.55)",
+          background: "rgba(10, 10, 10, 0.55)",
           backdropFilter: "blur(40px) saturate(180%)",
           WebkitBackdropFilter: "blur(40px) saturate(180%)",
           border: "1px solid rgba(255,255,255,0.08)",
@@ -92,14 +92,6 @@ export default function RegisterPage() {
           className="w-full lg:w-[52%] p-8 md:p-12 flex flex-col justify-between relative"
           style={{ borderLeft: "1px solid rgba(255,255,255,0.06)" }}
         >
-          <div
-            className="absolute top-0 right-0 w-64 h-64 rounded-full opacity-10 pointer-events-none"
-            style={{
-              background: "radial-gradient(circle, rgba(59,130,246,0.4) 0%, transparent 70%)",
-              transform: "translate(30%, -30%)",
-            }}
-          />
-
           <div className="flex items-center justify-between mb-10 relative z-10">
             <Link href="/" className="flex items-center gap-2.5 group">
               <div
@@ -245,21 +237,6 @@ export default function RegisterPage() {
 
         {/* ── LEFT: INFO PANEL ── */}
         <div className="hidden lg:flex w-[48%] relative p-10 flex-col justify-center items-center text-center overflow-hidden">
-          <div
-            className="absolute top-0 left-0 w-72 h-72 rounded-full opacity-15 pointer-events-none"
-            style={{
-              background: "radial-gradient(circle, rgba(139,92,246,0.5) 0%, transparent 70%)",
-              transform: "translate(-20%, -20%)",
-            }}
-          />
-          <div
-            className="absolute bottom-0 right-0 w-56 h-56 rounded-full opacity-10 pointer-events-none"
-            style={{
-              background: "radial-gradient(circle, rgba(59,130,246,0.4) 0%, transparent 70%)",
-              transform: "translate(20%, 20%)",
-            }}
-          />
-
           <div className="relative z-10 w-full max-w-sm mx-auto">
             <div
               className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-8 hover:rotate-0 transition-all duration-500"
