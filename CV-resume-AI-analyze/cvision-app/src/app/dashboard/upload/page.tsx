@@ -61,30 +61,32 @@ export default function UploadPage() {
     if (!role.trim()) { toast("warning", "Vui lòng nhập vị trí ứng tuyển!"); return; }
 
     setLoading(true);
-    setStep("reading");
 
     try {
-      // Step 1: Extract text client-side
-      const extractForm = new FormData();
-      extractForm.append("file", file);
-      const extractRes = await fetch("/api/v1/extract", { method: "POST", body: extractForm });
+      // Step 1: Upload lên Cloudinary trước (không giới hạn dung lượng, có progress bar)
+      setStep("uploading");
+      const cloudinaryUrl = await uploadFile(file);
+
+      // Step 2: Gửi URL cho extract API để trích xuất text (tránh giới hạn 4MB của Next.js)
+      setStep("reading");
+      const extractRes = await fetch("/api/v1/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: cloudinaryUrl, fileName: file.name }),
+      });
       if (!extractRes.ok) {
         const err = await extractRes.json().catch(() => ({}));
         throw new Error(err.error ?? "Không thể đọc nội dung file CV.");
       }
       const { text: cvText } = await extractRes.json();
 
-      // Step 2: Upload to Cloudinary
-      setStep("uploading");
-      const cloudinaryUrl = await uploadFile(file);
-
-      // Step 3: Run analysis — FastAPI backend → Next.js AI route → local demo
+      // Step 3: Chạy phân tích AI
       setStep("analyzing");
 
       let resultData: Partial<AnalysisResult> = {};
       let isDemo = false;
 
-      // 2a. FastAPI backend (has deterministic scorer + LLM enrichment)
+      // 3a. FastAPI backend
       const backendForm = new FormData();
       backendForm.append("cv", file);
       backendForm.append("role", role.trim());
@@ -97,7 +99,6 @@ export default function UploadPage() {
 
       if (backendRes?.ok) {
         const data = await backendRes.json();
-        // Merge backend result + IDs
         resultData = {
           ...(data.result ?? {}),
           analysis_id: data.analysis_id,
@@ -105,9 +106,8 @@ export default function UploadPage() {
           job_id: data.job_id,
         };
       } else {
-        // 2b. Next.js AI route (uses OPENAI_API_KEY env var)
+        // 3b. Next.js AI route
         const nextForm = new FormData();
-        nextForm.append("cv", file);
         nextForm.append("cvText", cvText);
         nextForm.append("role", role.trim());
         if (jd.trim()) nextForm.append("jd", jd.trim());
@@ -118,7 +118,6 @@ export default function UploadPage() {
           const data = await nextRes.json();
           resultData = { ...(data.result ?? {}), analysis_id: data.analysis_id };
         } else {
-          // 2c. Local demo fallback
           toast("warning", "Chưa cấu hình AI API — hiển thị kết quả demo.");
           resultData = buildDemoResult(cvText, role.trim());
           isDemo = true;
