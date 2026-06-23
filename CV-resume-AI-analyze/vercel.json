@@ -10,14 +10,6 @@
       "use": "@vercel/python"
     }
   ],
-  "functions": {
-    "cvision-app/src/app/api/v1/extract/route.ts": {
-      "maxDuration": 60
-    },
-    "cvision-app/src/app/api/v1/analyses/route.ts": {
-      "maxDuration": 60
-    }
-  },
   "routes": [
     {
       "src": "/api/(.*)",
