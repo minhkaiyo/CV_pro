@@ -36,6 +36,7 @@ import { useAuthGuard } from "@/lib/use-auth-guard";
 import { toast } from "@/components/ui/toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef } from "react";
+import { AIChatWidget } from "@/components/AIChatWidget";
 
 // ── UserMenu ───────────────────────────────────────────────────────────────────
 
@@ -373,6 +374,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </div>
         </main>
       </div>
+
+      {/* Floating AI Chat */}
+      <AIChatWidget />
     </div>
   );
 }
