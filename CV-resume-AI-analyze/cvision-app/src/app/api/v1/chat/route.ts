@@ -11,9 +11,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Thiếu tin nhắn" }, { status: 400 });
     }
 
-    const geminiKey = process.env.GEMINI_API_KEY;
+    const geminiKey = process.env.CVISION_GEMINI_KEY || process.env.GEMINI_API_KEY;
     if (!geminiKey) {
-      return NextResponse.json({ error: "Chưa cấu hình GEMINI_API_KEY." }, { status: 400 });
+      return NextResponse.json({ error: "Chưa cấu hình CVISION_GEMINI_KEY." }, { status: 400 });
     }
 
     const ai = new GoogleGenAI({ apiKey: geminiKey });
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     });
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.1-flash-lite",
       contents: contents,
       config: {
         systemInstruction: "Bạn là CVision AI, một chuyên gia nhân sự và cố vấn nghề nghiệp xuất sắc. Bạn giúp người dùng tối ưu CV, trả lời câu hỏi phỏng vấn, định hướng nghề nghiệp, và sửa lỗi CV. Hãy trả lời ngắn gọn, súc tích, chuyên nghiệp, sử dụng ngôn ngữ tự nhiên và thân thiện.",

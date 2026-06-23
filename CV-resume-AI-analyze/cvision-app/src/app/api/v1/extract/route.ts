@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       const result = await mammoth.extractRawText({ buffer });
       extractedText = result.value;
     } else if (["pdf", "png", "jpg", "jpeg", "webp"].includes(ext)) {
-      const geminiKey = process.env.GEMINI_API_KEY;
+      const geminiKey = process.env.CVISION_GEMINI_KEY || process.env.GEMINI_API_KEY;
       if (!geminiKey) {
         return NextResponse.json({ error: "Tính năng trích xuất PDF/Ảnh yêu cầu GEMINI_API_KEY." }, { status: 400 });
       }
