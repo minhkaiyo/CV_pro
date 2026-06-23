@@ -40,22 +40,48 @@ export function AIChatWidget() {
     e.preventDefault();
     if (!input.trim()) return;
 
-    const userMsg: Message = { id: Date.now().toString(), role: "user", text: input, timestamp: new Date() };
+    const currentInput = input;
+    const userMsg: Message = { id: Date.now().toString(), role: "user", text: currentInput, timestamp: new Date() };
+    
+    // Create a copy of messages to send to API
+    const currentHistory = [...messages];
+    
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setIsLoading(true);
 
-    // TODO: Connect to real API later. For now, simulate AI response.
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/v1/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: currentInput, history: currentHistory })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Lỗi phản hồi từ server");
+      }
+
       const aiMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "ai",
-        text: "Cảm ơn bạn. Tính năng chat trực tiếp với AI đang được hoàn thiện. Tạm thời tôi có thể phân tích CV giúp bạn ở trang Upload nhé!",
+        text: data.text,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMsg]);
+    } catch (error: any) {
+      console.error("Chat Error:", error);
+      const errorMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "ai",
+        text: "Xin lỗi, hiện tại tôi đang gặp chút sự cố kết nối. Vui lòng thử lại sau nhé!",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
