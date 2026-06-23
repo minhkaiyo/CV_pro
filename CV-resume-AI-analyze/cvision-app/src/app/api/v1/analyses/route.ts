@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 
 export const maxDuration = 60;
@@ -59,19 +60,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "role is required" }, { status: 400 });
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ error: "OPENAI_API_KEY not configured" }, { status: 503 });
-    }
+    const openaiKey = process.env.OPENAI_API_KEY;
+    const geminiKey = process.env.GEMINI_API_KEY;
 
-    const client = new OpenAI({ apiKey });
+    if (!openaiKey && !geminiKey) {
+      return NextResponse.json({ error: "Chưa cấu hình API Key (GEMINI_API_KEY hoặc OPENAI_API_KEY) trong biến môi trường." }, { status: 503 });
+    }
 
     const prompt = `Bạn là chuyên gia tuyển dụng và hệ thống phân tích ATS chuyên nghiệp.
 Phân tích CV dưới đây cho vị trí: ${role}
 ${jd ? `\nJob Description:\n${jd.substring(0, 3000)}\n` : ""}
 
 NỘI DUNG CV:
-${cvText.substring(0, 12000)}
+${cvText.substring(0, 15000)}
 
 Trả về JSON hợp lệ theo schema sau (không có markdown, không giải thích thêm):
 {
@@ -93,14 +94,30 @@ Trả về JSON hợp lệ theo schema sau (không có markdown, không giải t
 }
 Trả lời hoàn toàn bằng Tiếng Việt. Điểm số phải thực tế (không phải 100 trừ khi thực sự xuất sắc).`;
 
-    const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
-      temperature: 0.3,
-    });
+    let raw = "{}";
 
-    const raw = completion.choices[0]?.message?.content ?? "{}";
+    if (geminiKey) {
+      const ai = new GoogleGenAI({ apiKey: geminiKey });
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          temperature: 0.2,
+        }
+      });
+      raw = response.text || "{}";
+    } else if (openaiKey) {
+      const client = new OpenAI({ apiKey: openaiKey });
+      const completion = await client.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+        temperature: 0.3,
+      });
+      raw = completion.choices[0]?.message?.content ?? "{}";
+    }
+
     const parsed = JSON.parse(raw);
     const validated = analysisSchema.parse(parsed);
 
