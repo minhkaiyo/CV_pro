@@ -63,14 +63,14 @@ export default function RegisterPage() {
       {/* ── BACKGROUND ── */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=2560&auto=format&fit=crop"
+          src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2560&auto=format&fit=crop"
           alt="Background"
           fill
-          className="object-cover opacity-50"
+          className="object-cover opacity-30 grayscale"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-bl from-blue-950/60 via-black/70 to-purple-950/60" />
-        <div className="absolute inset-0 backdrop-blur-[3px]" />
+        <div className="absolute inset-0 bg-gradient-to-bl from-blue-950/80 via-black/80 to-purple-950/80" />
+        <div className="absolute inset-0 backdrop-blur-[4px]" />
       </div>
 
       {/* ── MAIN CARD ── */}

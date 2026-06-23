@@ -88,14 +88,17 @@ export default function LoginPage() {
       {/* ── BACKGROUND ── */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=2560&auto=format&fit=crop"
+          src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2560&auto=format&fit=crop"
           alt="Background"
           fill
-          className="object-cover opacity-50"
+          className="object-cover opacity-30 grayscale"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-950/60 via-black/70 to-blue-950/60" />
-        <div className="absolute inset-0 backdrop-blur-[3px]" />
+        {/* Multi-layer overlay for depth */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-950/80 via-black/80 to-blue-950/80" />
+        <div className="absolute inset-0 backdrop-blur-[4px]" />
+        {/* Noise texture for depth */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")'}} />
       </div>
 
       {/* ── MAIN CARD ── */}
