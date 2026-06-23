@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/toast";
 import { saveAnalysis } from "@/lib/store";
 import type { AnalysisResult } from "@/lib/types";
+import { useCloudinaryUpload } from "@/hooks/useCloudinaryUpload";
 
 const MAX_SIZE_MB = 10;
 const ALLOWED_TYPES = ["application/pdf", "application/msword",
@@ -21,6 +22,7 @@ export default function UploadPage() {
   const [loading, setLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [step, setStep] = useState<"idle" | "reading" | "uploading" | "analyzing" | "done">("idle");
+  const { uploadFile, isUploading, progress, error: uploadError } = useCloudinaryUpload();
 
   const validateFile = (f: File): string | null => {
     const ext = "." + f.name.split(".").pop()?.toLowerCase();
@@ -72,7 +74,11 @@ export default function UploadPage() {
       }
       const { text: cvText } = await extractRes.json();
 
-      // Step 2: Run analysis — FastAPI backend → Next.js AI route → local demo
+      // Step 2: Upload to Cloudinary
+      setStep("uploading");
+      const cloudinaryUrl = await uploadFile(file);
+
+      // Step 3: Run analysis — FastAPI backend → Next.js AI route → local demo
       setStep("analyzing");
 
       let resultData: Partial<AnalysisResult> = {};
@@ -144,6 +150,7 @@ export default function UploadPage() {
         ats_platform_scores: resultData.ats_platform_scores as Record<string, number>,
         resume_id: resultData.resume_id as string,
         job_id: resultData.job_id as string,
+        fileUrl: cloudinaryUrl,
       };
 
       saveAnalysis(analysis);
@@ -269,14 +276,21 @@ export default function UploadPage() {
 
           {/* Loading progress */}
           {loading && step !== "idle" && (
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <div className="font-bold text-sm text-blue-900">{stepLabel[step]}</div>
+                  <div className="text-blue-600/70 text-xs mt-0.5 font-medium">Vui lòng không đóng trang này...</div>
+                </div>
               </div>
-              <div className="flex-1">
-                <div className="font-bold text-sm text-blue-900">{stepLabel[step]}</div>
-                <div className="text-blue-600/70 text-xs mt-0.5 font-medium">Vui lòng không đóng trang này...</div>
-              </div>
+              {step === "uploading" && (
+                <div className="w-full bg-blue-200/50 rounded-full h-1.5 overflow-hidden">
+                  <div className="bg-blue-600 h-1.5 rounded-full transition-all duration-300" style={{ width: `${progress}%` }}></div>
+                </div>
+              )}
             </div>
           )}
 
