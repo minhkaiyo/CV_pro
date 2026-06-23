@@ -49,23 +49,20 @@ export async function POST(req: NextRequest) {
     } else if (ext === "docx" || ext === "doc") {
       const result = await mammoth.extractRawText({ buffer });
       extractedText = result.value;
-    } else if (ext === "pdf") {
-      const data = await pdfParse(buffer);
-      extractedText = data.text;
-    } else if (["png", "jpg", "jpeg", "webp"].includes(ext)) {
+    } else if (["pdf", "png", "jpg", "jpeg", "webp"].includes(ext)) {
       const geminiKey = process.env.GEMINI_API_KEY;
       if (!geminiKey) {
-        return NextResponse.json({ error: "Tính năng OCR ảnh yêu cầu GEMINI_API_KEY." }, { status: 400 });
+        return NextResponse.json({ error: "Tính năng trích xuất PDF/Ảnh yêu cầu GEMINI_API_KEY." }, { status: 400 });
       }
       const ai = new GoogleGenAI({ apiKey: geminiKey });
-      const base64Image = buffer.toString("base64");
-      const mimeType = ext === "jpg" ? "image/jpeg" : `image/${ext}`;
+      const base64Data = buffer.toString("base64");
+      const mimeType = ext === "pdf" ? "application/pdf" : (ext === "jpg" ? "image/jpeg" : `image/${ext}`);
       
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: [
-          "Vui lòng trích xuất toàn bộ văn bản có trong ảnh này (đây là CV). Giữ nguyên định dạng và bố cục tốt nhất có thể. Không bịa đặt thêm nội dung.",
-          { inlineData: { data: base64Image, mimeType } }
+          "Vui lòng trích xuất toàn bộ văn bản có trong file CV này. Giữ nguyên định dạng và dòng trống để phân tách nội dung. Không tóm tắt, không bình luận, chỉ xuất ra nội dung text.",
+          { inlineData: { data: base64Data, mimeType } }
         ]
       });
       extractedText = response.text || "";
