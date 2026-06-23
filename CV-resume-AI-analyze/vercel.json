@@ -12,6 +12,18 @@
   ],
   "routes": [
     {
+      "src": "/api/v1/chat",
+      "dest": "cvision-app/api/v1/chat"
+    },
+    {
+      "src": "/api/v1/extract",
+      "dest": "cvision-app/api/v1/extract"
+    },
+    {
+      "src": "/api/v1/upload",
+      "dest": "cvision-app/api/v1/upload"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "backend/app/main.py"
     },
