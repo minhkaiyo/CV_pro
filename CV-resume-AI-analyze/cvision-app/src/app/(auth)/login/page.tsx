@@ -23,8 +23,12 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       router.push("/dashboard");
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Đăng nhập thất bại");
+    } catch (err: any) {
+      if (err?.code === "auth/invalid-credential") {
+        setError("Sai email hoặc mật khẩu. Nếu chưa có tài khoản, vui lòng Đăng ký.");
+      } else {
+        setError(err instanceof Error ? err.message : "Đăng nhập thất bại");
+      }
     } finally {
       setLoading(false);
     }

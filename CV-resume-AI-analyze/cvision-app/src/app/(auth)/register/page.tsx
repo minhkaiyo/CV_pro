@@ -36,8 +36,14 @@ export default function RegisterPage() {
       });
 
       router.push("/dashboard");
-    } catch (err: unknown) {
-      setError("Đăng ký thất bại: " + (err instanceof Error ? err.message : "Lỗi không xác định"));
+    } catch (err: any) {
+      if (err?.code === "auth/email-already-in-use") {
+        setError("Email này đã được đăng ký. Vui lòng chuyển sang trang Đăng nhập.");
+      } else if (err?.code === "auth/weak-password") {
+        setError("Mật khẩu quá yếu. Vui lòng nhập ít nhất 6 ký tự.");
+      } else {
+        setError("Đăng ký thất bại: " + (err instanceof Error ? err.message : "Lỗi không xác định"));
+      }
     } finally {
       setLoading(false);
     }
