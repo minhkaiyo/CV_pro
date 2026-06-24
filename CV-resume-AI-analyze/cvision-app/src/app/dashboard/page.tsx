@@ -4,9 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import {
-  UploadCloud, FileText, CheckCircle, TrendingUp, ArrowRight,
+  UploadCloud, FileText, TrendingUp, ArrowRight,
   Sparkles, Bot, Layers, MessageSquare, Upload, Mail, Phone, Globe, MapPin,
-  Share2, GitBranch, Link2,
+  Share2, GitBranch,
 } from "lucide-react";
 import { getDashboardStats } from "@/lib/store";
 import { apiListAnalyses } from "@/lib/api";
@@ -92,11 +92,12 @@ function BannerCard({ card, idx }: { card: typeof BANNER_CARDS[number]; idx: num
       className="relative rounded-2xl overflow-hidden cursor-pointer group flex-1 min-w-0"
       style={{ minHeight: 200 }}
     >
-      <Link href={card.href} className="block h-full">
+      <Link href={card.href} className="relative block h-full">
         <Image
           src={card.img}
           alt={card.title}
           fill
+          priority={idx === 0}
           className="object-cover group-hover:scale-105 transition-transform duration-500"
           sizes="(max-width: 768px) 100vw, 33vw"
         />

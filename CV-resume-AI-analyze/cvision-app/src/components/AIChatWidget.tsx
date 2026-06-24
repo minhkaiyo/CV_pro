@@ -2,13 +2,23 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, X, Send, Sparkles, Loader2, Minimize2, Paperclip, User } from "lucide-react";
+import { Bot, X, Send, Sparkles, Minimize2, Paperclip, User } from "lucide-react";
 
 type Message = {
   id: string;
   role: "user" | "ai";
   text: string;
   timestamp: Date;
+};
+
+type ChatApiMessage = {
+  role: "user" | "model";
+  text: string;
+};
+
+type ChatApiResponse = {
+  text?: string;
+  error?: string;
 };
 
 export function AIChatWidget() {
@@ -44,7 +54,10 @@ export function AIChatWidget() {
     const userMsg: Message = { id: Date.now().toString(), role: "user", text: currentInput, timestamp: new Date() };
     
     // Create a copy of messages to send to API
-    const currentHistory = [...messages];
+    const currentHistory: ChatApiMessage[] = messages.map((msg) => ({
+      role: msg.role === "user" ? "user" : "model",
+      text: msg.text,
+    }));
     
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
@@ -57,7 +70,7 @@ export function AIChatWidget() {
         body: JSON.stringify({ message: currentInput, history: currentHistory })
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as ChatApiResponse;
 
       if (!res.ok) {
         throw new Error(data.error || "Lỗi phản hồi từ server");
@@ -66,11 +79,11 @@ export function AIChatWidget() {
       const aiMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "ai",
-        text: data.text,
+        text: data.text ?? "Xin loi, toi chua tao duoc phan hoi luc nay.",
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMsg]);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Chat Error:", error);
       const errorMsg: Message = {
         id: (Date.now() + 1).toString(),

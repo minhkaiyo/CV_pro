@@ -52,7 +52,7 @@ export const useCloudinaryUpload = () => {
             setError(errMsg);
             reject(new Error(errMsg));
           }
-        } catch (e) {
+        } catch {
           setError('Phản hồi từ server không hợp lệ');
           reject(new Error('Phản hồi từ server không hợp lệ'));
         } finally {

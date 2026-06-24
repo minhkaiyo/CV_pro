@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException
 from app.auth import verify_user
 from app.supabase_client import get_supabase
@@ -5,6 +6,10 @@ import logging
 
 router = APIRouter(tags=["admin"])
 logger = logging.getLogger(__name__)
+
+
+class PlanOverrideRequest(BaseModel):
+    plan: str
 
 def verify_admin(user_id: str = Depends(verify_user)) -> str:
     supabase = get_supabase()
@@ -33,8 +38,12 @@ async def list_users(admin_id: str = Depends(verify_admin)):
     return {"users": res.data}
 
 @router.patch("/admin/users/{id}/plan")
-async def override_user_plan(id: str, plan: str, admin_id: str = Depends(verify_admin)):
+async def override_user_plan(
+    id: str,
+    payload: PlanOverrideRequest,
+    admin_id: str = Depends(verify_admin),
+):
     """Manually override a user's subscription plan."""
     supabase = get_supabase()
-    res = supabase.table("profiles").update({"plan": plan}).eq("id", id).execute()
+    res = supabase.table("profiles").update({"plan": payload.plan}).eq("id", id).execute()
     return {"status": "success", "updated": res.data}

@@ -1,39 +1,66 @@
-// chat/route.ts — CVision AI Chat API (dùng fetch thuần, không phụ thuộc SDK)
 import { NextRequest, NextResponse } from "next/server";
 
 export const maxDuration = 60;
 export const runtime = "nodejs";
 
+type ChatHistoryMessage = {
+  role: "user" | "model";
+  text: string;
+};
+
+type ChatRequestBody = {
+  message: string;
+  history?: ChatHistoryMessage[];
+};
+
 const SYSTEM_INSTRUCTION =
-  "Bạn là CVision AI, một chuyên gia nhân sự và cố vấn nghề nghiệp xuất sắc. " +
-  "Bạn giúp người dùng tối ưu CV, trả lời câu hỏi phỏng vấn, định hướng nghề nghiệp, và sửa lỗi CV. " +
-  "Hãy trả lời ngắn gọn, súc tích, chuyên nghiệp, sử dụng ngôn ngữ tự nhiên và thân thiện.";
+  "Ban la CVision AI, mot chuyen gia nhan su va co van nghe nghiep xuat sac. " +
+  "Ban giup nguoi dung toi uu CV, tra loi cau hoi phong van, dinh huong nghe nghiep, va sua loi CV. " +
+  "Hay tra loi ngan gon, suc tich, chuyen nghiep, su dung ngon ngu tu nhien va than thien.";
+
+function normalizeHistory(history: unknown): ChatHistoryMessage[] {
+  if (!Array.isArray(history)) {
+    return [];
+  }
+
+  return history.filter((item): item is ChatHistoryMessage => {
+    if (!item || typeof item !== "object") {
+      return false;
+    }
+
+    const candidate = item as Partial<ChatHistoryMessage>;
+    return (
+      (candidate.role === "user" || candidate.role === "model") &&
+      typeof candidate.text === "string" &&
+      candidate.text.trim().length > 0
+    );
+  });
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json().catch(() => null);
-    if (!body || !body.message) {
-      return NextResponse.json({ error: "Thiếu tin nhắn" }, { status: 400 });
-    }
+    const body = (await req.json().catch(() => null)) as ChatRequestBody | null;
+    const message = typeof body?.message === "string" ? body.message.trim() : "";
 
-    const { message, history = [] } = body;
+    if (!message) {
+      return NextResponse.json({ error: "Thieu tin nhan" }, { status: 400 });
+    }
 
     const geminiKey = process.env.CVISION_GEMINI_KEY || process.env.GEMINI_API_KEY;
     if (!geminiKey) {
-      return NextResponse.json({ error: "Chưa cấu hình API key cho AI." }, { status: 400 });
+      return NextResponse.json({ error: "Chua cau hinh API key cho AI." }, { status: 400 });
     }
 
-    // Build contents array theo Gemini REST API format
     const contents = [
-      ...(history as Array<{ role: string; text: string }>).map((m) => ({
-        role: m.role === "user" ? "user" : "model",
-        parts: [{ text: m.text }],
+      ...normalizeHistory(body?.history).map((item) => ({
+        role: item.role,
+        parts: [{ text: item.text.trim() }],
       })),
       { role: "user", parts: [{ text: message }] },
     ];
 
-    const MODEL = "gemini-3.1-flash-lite";
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${geminiKey}`;
+    const model = "gemini-3.1-flash-lite";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
 
     const geminiRes = await fetch(url, {
       method: "POST",
@@ -54,13 +81,14 @@ export async function POST(req: NextRequest) {
     }
 
     const text =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "Xin lỗi, tôi không thể trả lời lúc này.";
+      typeof data?.candidates?.[0]?.content?.parts?.[0]?.text === "string"
+        ? data.candidates[0].content.parts[0].text
+        : "Xin loi, toi khong the tra loi luc nay.";
 
     return NextResponse.json({ success: true, text });
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err);
     console.error("Chat route crash:", err);
-    return NextResponse.json({ error: "Lỗi server: " + errorMsg }, { status: 500 });
+    return NextResponse.json({ error: `Loi server: ${errorMsg}` }, { status: 500 });
   }
 }

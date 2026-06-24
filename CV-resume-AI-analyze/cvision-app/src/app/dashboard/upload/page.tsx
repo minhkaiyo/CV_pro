@@ -22,7 +22,7 @@ export default function UploadPage() {
   const [loading, setLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [step, setStep] = useState<"idle" | "reading" | "uploading" | "analyzing" | "done">("idle");
-  const { uploadFile, isUploading, progress, error: uploadError } = useCloudinaryUpload();
+  const { uploadFile, progress } = useCloudinaryUpload();
 
   const validateFile = (f: File): string | null => {
     const ext = "." + f.name.split(".").pop()?.toLowerCase();
@@ -316,8 +316,7 @@ export default function UploadPage() {
 
 // ── Demo result builder (when backend is unavailable) ────────
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function buildDemoResult(cvText: string, role: string, _jd?: string): Partial<AnalysisResult> {
+function buildDemoResult(cvText: string, role: string): Partial<AnalysisResult> {
   const words = cvText.toLowerCase().split(/\s+/);
   const commonKeywords = ["python", "react", "sql", "javascript", "typescript", "excel",
     "figma", "node.js", "java", "git", "aws", "docker", "communication", "leadership"];

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FileText, Calendar, ChevronRight, Trash2, Search, UploadCloud, Loader2, Sparkles } from "lucide-react";
+import { FileText, Calendar, ChevronRight, Trash2, Search, UploadCloud, Loader2 } from "lucide-react";
 import { getAnalyses, saveAnalysis, deleteAnalysis } from "@/lib/store";
 import { apiListAnalyses, apiDeleteAnalysis } from "@/lib/api";
 import type { AnalysisResult } from "@/lib/types";

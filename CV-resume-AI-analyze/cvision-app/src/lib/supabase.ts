@@ -1,17 +1,12 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "http://localhost:54321";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "dummy_anon_key";
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('Missing Supabase URL or Anon Key. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
-  } else {
-    console.warn('⚠️ Missing Supabase keys. Using dummy values for local development fallback.');
-  }
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  console.warn(
+    "Missing Supabase keys. Using fallback values until NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are configured."
+  );
 }
 
-export const supabase = createClient(
-  supabaseUrl || 'http://localhost:54321', 
-  supabaseAnonKey || 'dummy_anon_key'
-);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);

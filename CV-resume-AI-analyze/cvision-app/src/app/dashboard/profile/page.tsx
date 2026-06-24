@@ -2,10 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { Camera, Save, Eye, EyeOff, Shield, Bell, Link2, Loader2 } from "lucide-react";
-import { auth, db } from "@/lib/firebase";
-import { onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential, type User } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
 import { toast } from "@/components/ui/toast";
+import {
+  getProfile,
+  onAppAuthStateChange,
+  type AppUser,
+  updateCurrentUserPassword,
+  upsertProfile,
+} from "@/lib/auth";
 
 // ── Section card ─────────────────────────────────────────────────────────────
 
@@ -37,7 +41,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 const INPUT = "w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 placeholder:text-gray-400 outline-none focus:border-blue-400 focus:bg-white transition-all";
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [profile, setProfile] = useState({ full_name: "", email: "", phone: "", school: "", major: "" });
   const [saving, setSaving] = useState(false);
 
@@ -54,12 +58,11 @@ export default function ProfilePage() {
   const [notifAnalysis, setNotifAnalysis] = useState(true);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (u) => {
+    const unsub = onAppAuthStateChange(async (u) => {
       setUser(u);
       if (u) {
-        const snap = await getDoc(doc(db, "profiles", u.uid)).catch(() => null);
-        if (snap?.exists()) {
-          const data = snap.data();
+        const data = await getProfile(u.id).catch(() => null);
+        if (data) {
           setProfile({
             full_name: data.full_name ?? "",
             email: u.email ?? "",
@@ -79,13 +82,13 @@ export default function ProfilePage() {
     if (!user) return;
     setSaving(true);
     try {
-      await setDoc(doc(db, "profiles", user.uid), {
+      await upsertProfile(user.id, {
         full_name: profile.full_name,
+        email: profile.email,
         phone: profile.phone,
         school: profile.school,
         major: profile.major,
-        updated_at: new Date(),
-      }, { merge: true });
+      });
       toast("success", "Đã lưu thông tin cá nhân!");
     } catch {
       toast("error", "Lưu thất bại. Thử lại sau.");
@@ -100,9 +103,7 @@ export default function ProfilePage() {
     if (newPwd !== confirmPwd) { toast("warning", "Mật khẩu xác nhận không khớp."); return; }
     setSavingPwd(true);
     try {
-      const cred = EmailAuthProvider.credential(user.email, currentPwd);
-      await reauthenticateWithCredential(user, cred);
-      await updatePassword(user, newPwd);
+      await updateCurrentUserPassword(newPwd);
       toast("success", "Đã đổi mật khẩu thành công!");
       setCurrentPwd(""); setNewPwd(""); setConfirmPwd("");
     } catch (err: unknown) {

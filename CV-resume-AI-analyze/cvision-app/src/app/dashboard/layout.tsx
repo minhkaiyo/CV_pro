@@ -4,9 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useState } from "react";
 import {
-  LayoutDashboard,
   FileText,
-  CreditCard,
   LogOut,
   MessageSquare,
   Plus,
@@ -14,29 +12,24 @@ import {
   Layers,
   Menu,
   X,
-  UploadCloud,
   ChevronDown,
   Bell,
   Search,
   Sparkles,
   History,
-  BookOpen,
   Target,
   Home,
   ChevronLeft,
   Shield,
-  Settings,
   PenTool,
   Bookmark,
 } from "lucide-react";
-import { signOut } from "firebase/auth";
-import { auth, db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
 import { useAuthGuard } from "@/lib/use-auth-guard";
 import { toast } from "@/components/ui/toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { AIChatWidget } from "@/components/AIChatWidget";
+import { getProfile, onAppAuthStateChange, signOutAppUser } from "@/lib/auth";
 
 // ── UserMenu ───────────────────────────────────────────────────────────────────
 
@@ -48,15 +41,11 @@ function UserMenu() {
   const [userPlan, setUserPlan] = useState("FREE");
 
   useEffect(() => {
-    const unsub = auth.onAuthStateChanged(async (u) => {
+    const unsub = onAppAuthStateChange(async (u) => {
       if (u) {
-        const snap = await getDoc(doc(db, "profiles", u.uid)).catch(() => null);
-        if (snap?.exists()) {
-          setUserName(snap.data().full_name || u.email?.split("@")[0] || "User");
-          setUserPlan(snap.data().plan?.toUpperCase() || "FREE");
-        } else {
-          setUserName(u.email?.split("@")[0] || "User");
-        }
+        const profile = await getProfile(u.id).catch(() => null);
+        setUserName(profile?.full_name || u.email?.split("@")[0] || "User");
+        setUserPlan(profile?.plan?.toUpperCase() || "FREE");
       }
     });
     return unsub;
@@ -74,7 +63,8 @@ function UserMenu() {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      const { error } = await signOutAppUser();
+      if (error) throw error;
       toast("success", "Đã đăng xuất thành công");
       router.push("/login");
     } catch {
@@ -119,7 +109,7 @@ function UserMenu() {
               <div className="text-[11px] font-black text-emerald-500 tracking-wider mt-0.5">{userPlan}</div>
             </div>
             <div className="py-2">
-              {MENU_ITEMS.map((item, idx) => (
+              {MENU_ITEMS.map((item) => (
                 <div key={item.label}>
                   {item.divider && <div className="h-px bg-gray-50 my-1.5" />}
                   <Link
@@ -210,7 +200,8 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      const { error } = await signOutAppUser();
+      if (error) throw error;
       toast("success", "Đã đăng xuất thành công");
       router.push("/login");
     } catch {

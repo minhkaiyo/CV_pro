@@ -1,36 +1,158 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CVisionAI Frontend
 
-## Getting Started
+Next.js frontend cho CVisionAI: dashboard phan tich CV, cover letter, CV versions, billing, admin, va cac landing/product pages.
 
-First, run the development server:
+## Current Status
+
+- `npm run lint`: pass
+- `npm run build`: pass
+- UI/route structure: on dinh
+- Auth architecture: da chuyen frontend sang Supabase de dong bo voi backend
+
+## Tech Stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Framer Motion
+- Supabase JS client
+
+## Project Structure
+
+```text
+src/
+  app/
+    (auth)/              login, register, forgot-password
+    (public)/            landing, product, solutions, company, customers
+    admin/               admin dashboard pages
+    dashboard/           user workspace
+    api/v1/              Next-side helper APIs (chat, analyses, extract, upload)
+  components/            shared UI blocks
+  hooks/                 upload and client hooks
+  lib/                   api client, auth helpers, stores, types
+```
+
+## Local Development
+
+### Frontend
+
+```bash
+npm install
+npm run dev
+```
+
+Frontend mac dinh chay tai `http://localhost:3000`.
+
+### Backend
+
+Frontend ky vong backend FastAPI tai:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+```
+
+Neu backend chua chay, mot so luong se roi ve demo/local mode.
+
+## Environment Variables
+
+### Required for normal frontend usage
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```
+
+### AI chat
+
+```env
+CVISION_GEMINI_KEY=...
+# or
+GEMINI_API_KEY=...
+```
+
+## Key Commands
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run lint
+npm run build
+npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Functional Areas
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### User Workspace
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Dashboard overview
+- Upload CV + JD
+- ATS analysis history
+- CV versions
+- Cover letter generation
+- Billing/profile
 
-## Learn More
+### Admin
 
-To learn more about Next.js, take a look at the following resources:
+- Metrics
+- User list
+- Plan override
+- Product/category mock management pages
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Public Pages
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Homepage
+- Product detail pages
+- Solutions pages
+- Pricing/privacy/terms/company/customers
 
-## Deploy on Vercel
+## API Notes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Frontend chinh hien tai goi backend FastAPI cho:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `/analyses`
+- `/cv-versions`
+- `/advanced-ai/cover-letter`
+- `/billing/*`
+- `/admin/*`
+- `/health`
+- `/resumes/improve/*`
+
+Next.js local API routes dang xu ly bo tro cho:
+
+- `/api/v1/chat`
+- `/api/v1/analyses`
+- `/api/v1/extract`
+- `/api/v1/upload`
+
+## Commercial Readiness Notes
+
+Nhung phan da duoc lam sach:
+
+- Admin update-plan contract da dong bo body JSON
+- Frontend lint da sach
+- Frontend build da pass
+- Chat payload da duoc type/validate chat che hon
+- Backend branding API da doi sang CVisionAI
+
+Nhung phan con lai can lam tiep:
+
+1. Kiem tra va chot policy/RLS cho `profiles`, `usage_logs`, `subscriptions`
+2. Thay hard-coded admin metrics bang data that su
+3. Bo sung test script va smoke tests
+4. Chuan hoa env + deployment flow
+
+## Biggest Known Risk
+
+Commercial risk lon nhat hien tai khong con nam o auth split nua, ma nam o:
+
+- chua khoa chat Supabase env/deploy flow
+- admin metrics van la mock data
+- chua co test automation cho core flows
+
+## Suggested Next Work Order
+
+1. Chot RLS + auth deployment checklist
+2. Replace admin demo metrics
+3. Add smoke tests
+4. Final deploy checklist

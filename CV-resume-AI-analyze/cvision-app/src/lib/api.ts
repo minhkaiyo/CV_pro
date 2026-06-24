@@ -6,7 +6,7 @@
  * - All errors throw with a Vietnamese-friendly message
  */
 
-import { auth } from "./firebase";
+import { getAccessToken } from "./auth";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
@@ -14,9 +14,8 @@ const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
 async function getAuthHeader(): Promise<Record<string, string>> {
   try {
-    const user = auth.currentUser;
-    if (user) {
-      const token = await user.getIdToken();
+    const token = await getAccessToken();
+    if (token) {
       return { Authorization: `Bearer ${token}` };
     }
   } catch {

@@ -5,15 +5,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useState } from "react";
 import {
   Home, ShoppingCart, Tag, UserCheck, Users, BarChart2,
-  Settings, X, LayoutTemplate, Sparkles, ChevronDown, ChevronLeft, Menu, Bell, Search,
+  Settings, X, LayoutTemplate, Sparkles, ChevronDown, ChevronLeft, Menu, Bell,
   User, PenTool, Bookmark, LogOut, Shield
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef } from "react";
-import { auth, db } from "@/lib/firebase";
-import { signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
 import { toast } from "@/components/ui/toast";
+import { getProfile, onAppAuthStateChange, signOutAppUser } from "@/lib/auth";
 
 // ── UserMenu ───────────────────────────────────────────────────────────────────
 
@@ -25,15 +23,11 @@ function UserMenu() {
   const [userPlan, setUserPlan] = useState("FREE");
 
   useEffect(() => {
-    const unsub = auth.onAuthStateChanged(async (u) => {
+    const unsub = onAppAuthStateChange(async (u) => {
       if (u) {
-        const snap = await getDoc(doc(db, "profiles", u.uid)).catch(() => null);
-        if (snap?.exists()) {
-          setUserName(snap.data().full_name || u.email?.split("@")[0] || "User");
-          setUserPlan(snap.data().plan?.toUpperCase() || "FREE");
-        } else {
-          setUserName(u.email?.split("@")[0] || "User");
-        }
+        const profile = await getProfile(u.id).catch(() => null);
+        setUserName(profile?.full_name || u.email?.split("@")[0] || "User");
+        setUserPlan(profile?.plan?.toUpperCase() || "FREE");
       }
     });
     return unsub;
@@ -51,7 +45,8 @@ function UserMenu() {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      const { error } = await signOutAppUser();
+      if (error) throw error;
       toast("success", "Đã đăng xuất thành công");
       router.push("/login");
     } catch {
@@ -96,7 +91,7 @@ function UserMenu() {
               <div className="text-[11px] font-black text-indigo-500 tracking-wider mt-0.5">{userPlan}</div>
             </div>
             <div className="py-2">
-              {MENU_ITEMS.map((item, idx) => (
+              {MENU_ITEMS.map((item) => (
                 <div key={item.label}>
                   {item.divider && <div className="h-px bg-gray-50 my-1.5" />}
                   <Link

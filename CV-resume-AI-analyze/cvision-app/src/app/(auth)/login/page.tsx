@@ -1,13 +1,18 @@
 "use client";
 
+/* eslint-disable react/no-unescaped-entities */
+
 import Link from "next/link";
 import { useState } from "react";
-import { auth } from "@/lib/firebase";
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, ArrowRight, Sparkles, AlertCircle } from "lucide-react";
 import Image from "next/image";
+import { signInWithEmail, signInWithGoogle, sendResetPasswordEmail } from "@/lib/auth";
+
+type AuthErrorLike = {
+  code?: string;
+};
 
 const getAuthErrorMsg = (code: string): string => {
   switch (code) {
@@ -43,10 +48,11 @@ export default function LoginPage() {
     setIsTooMany(false);
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const { error } = await signInWithEmail(email, password);
+      if (error) throw error;
       router.push("/dashboard");
-    } catch (err: any) {
-      const code = err?.code || "";
+    } catch (err: unknown) {
+      const code = typeof err === "object" && err !== null ? (err as AuthErrorLike).code || "" : "";
       setError(getAuthErrorMsg(code));
       if (code === "auth/too-many-requests") setIsTooMany(true);
     } finally {
@@ -58,11 +64,11 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      router.push("/dashboard");
-    } catch (err: any) {
-      setError(getAuthErrorMsg(err?.code || ""));
+      const { error } = await signInWithGoogle();
+      if (error) throw error;
+    } catch (err: unknown) {
+      const code = typeof err === "object" && err !== null ? (err as AuthErrorLike).code || "" : "";
+      setError(getAuthErrorMsg(code));
     } finally {
       setLoading(false);
     }
@@ -74,7 +80,8 @@ export default function LoginPage() {
       return;
     }
     try {
-      await sendPasswordResetEmail(auth, email);
+      const { error } = await sendResetPasswordEmail(email);
+      if (error) throw error;
       setResetSent(true);
       setError("");
       setIsTooMany(false);

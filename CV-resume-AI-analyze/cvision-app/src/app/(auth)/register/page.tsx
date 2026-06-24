@@ -1,14 +1,18 @@
 "use client";
 
+/* eslint-disable react/no-unescaped-entities */
+
 import Link from "next/link";
 import { useState } from "react";
-import { auth, db } from "@/lib/firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, ArrowRight, Sparkles, Trophy, AlertCircle } from "lucide-react";
 import Image from "next/image";
+import { signUpWithEmail, upsertProfile } from "@/lib/auth";
+
+type AuthErrorLike = {
+  code?: string;
+};
 
 const getRegisterErrorMsg = (code: string): string => {
   switch (code) {
@@ -39,20 +43,25 @@ export default function RegisterPage() {
     setError("");
     setLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const { data, error } = await signUpWithEmail(email, password, name);
+      if (error) throw error;
+      const user = data.user;
 
-      await setDoc(doc(db, "profiles", user.uid), {
+      if (!user) {
+        throw new Error("Dang ky khong thanh cong.");
+      }
+
+      await upsertProfile(user.id, {
         full_name: name,
-        email: email,
+        email,
         plan: "free",
         role: "user",
-        created_at: new Date(),
       });
 
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(getRegisterErrorMsg(err?.code || ""));
+    } catch (err: unknown) {
+      const code = typeof err === "object" && err !== null ? (err as AuthErrorLike).code || "" : "";
+      setError(getRegisterErrorMsg(code));
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import Link from "next/link";
 import Image from "next/image";
 import { Sparkles, Bot, Search, Lock, BarChart3, Workflow, CheckCircle } from "lucide-react";
